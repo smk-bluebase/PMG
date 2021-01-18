@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <group android:checkableBehavior="single">
+
+        <item
+            android:id="@+id/nav_profile"
+            android:icon="@drawable/profile"
+            android:title="Profile" />
+
+        <item
+            android:id="@+id/nav_change_password"
+            android:icon="@drawable/change_password"
+            android:title="Change Password" />
+
+        <item android:title="GPS">
+
+            <menu>
+                <group android:checkableBehavior="single">
+
+                    <item
+                        android:id="@+id/nav_gps_tracker"
+                        android:icon="@drawable/gps_tracker"
+                        android:title="GPS Tracker" />
+
+                    <item
+                        android:id="@+id/nav_history"
+                        android:icon="@drawable/history"
+                        android:title="History" />
+
+                </group>
+            </menu>
+
+        </item>
+
+    </group>
+</menu>

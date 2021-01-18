@@ -1,0 +1,13 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/reconnect"
+        android:icon="@drawable/reconnect_icon"
+        android:title="reconnect"
+        app:showAsAction="always"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:orderInCategory="0" />
+
+</menu>
