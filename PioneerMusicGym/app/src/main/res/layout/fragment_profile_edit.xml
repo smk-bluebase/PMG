@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/lightGrey">
+
+    <ImageView
+        android:id="@+id/background"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/application_background"
+        android:scaleX="2"
+        android:scaleY="3"
+        android:layout_marginEnd="100dp" />
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingTop="50dp">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="50dp"
+                android:layout_marginLeft="30dp"
+                android:layout_marginRight="30dp"
+                android:layout_marginBottom="30dp"
+                android:background="@drawable/edit_text_style"
+                android:orientation="vertical"
+                android:paddingLeft="30dp"
+                android:paddingRight="30dp" >
+
+                <TextView
+                    android:id="@+id/profileTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="40dp"
+                    android:text="PROFILE"
+                    android:textColor="@color/rosyBrown"
+                    android:textSize="30sp"
+                    android:layout_alignParentLeft="true"
+                    android:layout_marginLeft="10dp"
+                    android:textStyle="bold" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/nameTextLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:layout_below="@id/profileTitle"
+                    android:hint="Name">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/name"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/black" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/userNameTextLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:layout_below="@id/nameTextLayout"
+                    android:hint="UserName">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/userName"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/black" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/emailTextLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:layout_below="@id/userNameTextLayout"
+                    android:hint="Email">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/email"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/black" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/titleTextLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:layout_below="@id/emailTextLayout"
+                    android:hint="Title">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/title"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/black" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/genderTextLayout"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.ExposedDropdownMenu"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:layout_below="@id/titleTextLayout"
+                    android:hint="Gender">
+
+                    <AutoCompleteTextView
+                        android:id="@+id/gender"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/black"
+                        android:editable="false"/>
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/dateOfBirthTextLayout"
+                    android:layout_width="match_parent"
+                    android:layout_marginTop="20dp"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/genderTextLayout"
+                    android:hint="Date of Birth">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/dateOfBirth"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/black"
+                        android:editable="false"/>
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/mobileNoTextLayout"
+                    android:layout_width="match_parent"
+                    android:layout_marginTop="20dp"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/dateOfBirthTextLayout"
+                    android:hint="Mobile Number">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/mobileNo"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/black" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/experienceTextLayout"
+                    android:layout_width="match_parent"
+                    android:layout_marginTop="20dp"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/mobileNoTextLayout"
+                    android:hint="Experience (in years)">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/experience"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/black" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <TextView
+                    android:id="@+id/languagesKnown"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Languages Known"
+                    android:textColor="@color/c1"
+                    android:textSize="20sp"
+                    android:layout_below="@id/experienceTextLayout"
+                    android:layout_marginTop="20dp" />
+
+                <CheckBox
+                    android:id="@+id/englishCheckBox"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="English"
+                    android:layout_below="@id/languagesKnown"
+                    android:layout_marginTop="10dp" />
+
+                <CheckBox
+                    android:id="@+id/tamilCheckBox"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Tamil"
+                    android:layout_toRightOf="@id/englishCheckBox"
+                    android:layout_below="@id/languagesKnown"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginLeft="20dp" />
+
+                <CheckBox
+                    android:id="@+id/hindiCheckBox"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Hindi"
+                    android:layout_toRightOf="@id/tamilCheckBox"
+                    android:layout_below="@id/languagesKnown"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginLeft="20dp"/>
+
+                <Button
+                    android:id="@+id/update"
+                    android:layout_width="250dp"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/hindiCheckBox"
+                    android:layout_marginTop="20dp"
+                    android:background="@color/c4"
+                    android:textColor="@color/white"
+                    android:text="Update"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginBottom="40dp" />
+
+            </RelativeLayout>
+
+        </RelativeLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+</RelativeLayout>

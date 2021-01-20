@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/lightGrey">
+
+    <ImageView
+        android:id="@+id/background"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/application_background"
+        android:scaleX="2"
+        android:scaleY="3"
+        android:layout_marginEnd="100dp" />
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingTop="70dp"
+            android:paddingBottom="70dp">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="500dp"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="50dp"
+                android:layout_marginLeft="30dp"
+                android:layout_marginRight="30dp"
+                android:layout_marginBottom="30dp"
+                android:background="@drawable/edit_text_style"
+                android:orientation="vertical"
+                android:paddingLeft="30dp"
+                android:paddingRight="30dp" >
+
+                <TextView
+                    android:id="@+id/settingsTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="40dp"
+                    android:text="SETTINGS"
+                    android:layout_alignParentLeft="true"
+                    android:textColor="@color/rosyBrown"
+                    android:textSize="30sp"
+                    android:textStyle="bold"
+                    android:layout_marginLeft="10dp"/>
+
+                <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/getNotificationSwitch"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:layout_below="@id/settingsTitle"
+                    android:layout_marginTop="15dp"
+                    android:text="Get New Songs Notifications           "
+                    android:textSize="17dp" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/languagePreferredTextLayout"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="15dp"
+                    android:layout_below="@id/getNotificationSwitch"
+                    android:hint="Language Preferred">
+
+                    <AutoCompleteTextView
+                        android:id="@+id/languagePreferred"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/black"
+                        android:editable="false"/>
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <TextView
+                    android:id="@+id/volumeTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_below="@id/languagePreferredTextLayout"
+                    android:text="Volume"
+                    android:textSize="20sp" />
+
+                <SeekBar
+                    android:id="@+id/volumeSeekBar"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/volumeTitle"
+                    android:layout_marginTop="15dp" />
+
+                <TextView
+                    android:id="@+id/bassTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_below="@id/volumeSeekBar"
+                    android:text="Bass"
+                    android:textSize="20sp" />
+
+                <SeekBar
+                    android:id="@+id/bassSeekBar"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/bassTitle"
+                    android:layout_marginTop="15dp" />
+
+                <TextView
+                    android:id="@+id/trebleTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_below="@id/bassSeekBar"
+                    android:text="Treble"
+                    android:textSize="20sp" />
+
+                <SeekBar
+                    android:id="@+id/trebleSeekBar"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/trebleTitle"
+                    android:layout_marginTop="15dp"
+                    android:layout_marginBottom="15dp" />
+
+            </RelativeLayout>
+
+        </RelativeLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+</RelativeLayout>

@@ -37,4 +37,14 @@ public class CommonUtils {
         dataBaseHelper.close();
     }
 
+    public static boolean getNotification;
+
+    public static String languagePreferred;
+
+    public static int volume;
+
+    public static int bass;
+
+    public static int treble;
+
 }
