@@ -29,9 +29,8 @@
             android:theme="@style/AppTheme.Splash">
 
         </activity>
-        <activity android:name=".MainActivity">
-
-        </activity>
+        <activity android:name=".MainActivity"
+            android:theme="@style/Theme.PioneerMusicGym.NoActionBar" />
     </application>
 
 </manifest>

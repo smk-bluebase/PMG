@@ -47,7 +47,7 @@ public class LoginActivity extends AppCompatActivity {
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         int height = displayMetrics.heightPixels;
-        height = (int) (height / 1.5);
+        height = (int) (height / 1.7);
 
         ImageView background = findViewById(R.id.background);
         RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
@@ -144,6 +144,7 @@ public class LoginActivity extends AppCompatActivity {
                     if(isRememberPassword){
                         CommonUtils.dataBaseHelper.deleteUserMaster();
                         CommonUtils.dataBaseHelper.insertUserMaster(userNameEditText1.getText().toString(), passwordEditText.getText().toString());
+                        CommonUtils.closeDataBaseHelper();
                     }
 
                     progressDialog = new ProgressDialog(context);
@@ -180,23 +181,20 @@ public class LoginActivity extends AppCompatActivity {
             final EditText userNameEditText2 = dialog.findViewById(R.id.userName);
             Button submit = dialog.findViewById(R.id.submit);
 
-            submit.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if(userNameEditText2.getText().toString().length() > 0) {
-                        progressDialog = new ProgressDialog(context);
-                        progressDialog.setCancelable(false);
-                        progressDialog.setMessage("Loading...");
-                        progressDialog.show();
+            submit.setOnClickListener(v -> {
+                if(userNameEditText2.getText().toString().length() > 0) {
+                    progressDialog = new ProgressDialog(context);
+                    progressDialog.setCancelable(false);
+                    progressDialog.setMessage("Loading...");
+                    progressDialog.show();
 
-                        jsonObject = new JsonObject();
-                        jsonObject.addProperty("userName", userNameEditText2.getText().toString());
+                    jsonObject = new JsonObject();
+                    jsonObject.addProperty("userName", userNameEditText2.getText().toString());
 
-                        PostForgotPassword postForgotPassword = new PostForgotPassword(context);
-                        postForgotPassword.checkServerAvailability(2);
-                    }else{
-                        Toast.makeText(context, "Enter Username", Toast.LENGTH_SHORT).show();
-                    }
+                    PostForgotPassword postForgotPassword = new PostForgotPassword(context);
+                    postForgotPassword.checkServerAvailability(2);
+                }else{
+                    Toast.makeText(context, "Enter Username", Toast.LENGTH_SHORT).show();
                 }
             });
 
@@ -229,7 +227,8 @@ public class LoginActivity extends AppCompatActivity {
                     CommonUtils.userId = jsonObject.getInt("userId");
                     CommonUtils.userName = userNameEditText1.getText().toString();
                     CommonUtils.email = jsonObject.getString("email");
-                    CommonUtils.dataBaseHelper.insertUserIdIntoUserMaster(jsonObject.getInt("userId"));
+                    CommonUtils.startDatabaseHelper(context);
+                    CommonUtils.dataBaseHelper.insertUserIdIntoUserMaster(jsonObject.getInt("userId"), CommonUtils.userName);
                     CommonUtils.closeDataBaseHelper();
                     Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                     startActivity(intent);
@@ -266,7 +265,6 @@ public class LoginActivity extends AppCompatActivity {
                 JSONObject jsonObject = (JSONObject) jsonArray.get(0);
 
                 if(jsonObject.getBoolean("status")){
-                    CommonUtils.closeDataBaseHelper();
                     Intent intent = new Intent(LoginActivity.this, ForgotPasswordActivity.class);
                     startActivity(intent);
                 }else{

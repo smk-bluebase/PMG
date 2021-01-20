@@ -12,7 +12,7 @@
         android:layout_marginTop="10dp"
         android:text="ENTER OTP"
         android:layout_centerHorizontal="true"
-        android:textColor="@color/c1"
+        android:textColor="@color/rosyBrown"
         android:textSize="30sp"
         android:textStyle="bold" />
 
