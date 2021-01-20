@@ -13,7 +13,7 @@ function sendMail($email, $subject, $message){
    $mail->Pool = true;
    $mail->Mailer   = 'smtp';
    $mail->Username = 'info@bluebase.in';
-   $mail->Password = 'Bsplinfo@#2020';
+   $mail->Password = '';
 
    $mail->setFrom('info@bluebase.in', 'Pioneer Music Gym App');
    $mail->addReplyTo('info@bluebase.in', 'Pioneer Music Gym App');
