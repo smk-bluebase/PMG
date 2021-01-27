@@ -13,13 +13,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-public class HomeFragment extends Fragment {
+public class PlaylistsFragment extends Fragment {
     Context context;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_home, container, false);
+        View view = inflater.inflate(R.layout.fragment_playlists, container, false);
 
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
@@ -31,8 +31,6 @@ public class HomeFragment extends Fragment {
         layoutParams.setMargins(0, 0, 200, height);
         background.setLayoutParams(layoutParams);
 
-
-
         return view;
     }
 
@@ -41,6 +39,7 @@ public class HomeFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
 
         context = getContext();
+
 
 
     }
