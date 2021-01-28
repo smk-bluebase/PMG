@@ -2,8 +2,128 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/lightGrey">
 
+    <ImageView
+        android:id="@+id/background"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/application_background"
+        android:scaleX="2"
+        android:scaleY="3"
+        android:layout_marginEnd="100dp" />
 
+    <androidx.cardview.widget.CardView
+        android:id="@+id/searchCardView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:layout_margin="10dp"
+        android:visibility="visible">
+
+        <SearchView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Search Library" />
+
+    </androidx.cardview.widget.CardView>
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/searchCardView"
+        android:layout_marginTop="20dp"
+        android:layout_marginHorizontal="15dp"
+        android:layout_marginBottom="30dp">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/white">
+
+            <TextView
+                android:id="@+id/artistTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Artists"
+                android:textColor="@color/black"
+                android:textSize="22sp"
+                android:layout_marginTop="30dp"
+                android:layout_marginLeft="15dp"
+                android:layout_marginBottom="15dp" />
+
+            <ListView
+                android:id="@+id/artistsListView"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:clipToPadding="false"
+                android:layout_below="@id/artistTitle"
+                android:background="@drawable/background1" />
+
+            <TextView
+                android:id="@+id/composersTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Composers"
+                android:textColor="@color/black"
+                android:textSize="22sp"
+                android:layout_marginTop="30dp"
+                android:layout_marginLeft="15dp"
+                android:layout_marginBottom="15dp"
+                android:layout_below="@id/artistsListView"/>
+
+            <ListView
+                android:id="@+id/composersListView"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:clipToPadding="false"
+                android:layout_below="@id/composersTitle"
+                android:background="@drawable/background2" />
+
+            <TextView
+                android:id="@+id/albumsTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Albums"
+                android:textColor="@color/black"
+                android:textSize="22sp"
+                android:layout_marginTop="30dp"
+                android:layout_marginLeft="15dp"
+                android:layout_marginBottom="15dp"
+                android:layout_below="@id/composersListView"/>
+
+            <ListView
+                android:id="@+id/albumsListView"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:clipToPadding="false"
+                android:layout_below="@id/albumsTitle"
+                android:background="@drawable/background3" />
+
+            <TextView
+                android:id="@+id/moviesTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Movies"
+                android:textColor="@color/black"
+                android:textSize="22sp"
+                android:layout_marginTop="30dp"
+                android:layout_marginLeft="15dp"
+                android:layout_marginBottom="15dp"
+                android:layout_below="@id/albumsListView"/>
+
+            <ListView
+                android:id="@+id/moviesListView"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:clipToPadding="false"
+                android:layout_below="@id/moviesTitle"
+                android:background="@drawable/background4"
+                android:layout_marginBottom="30dp" />
+
+        </RelativeLayout>
+
+    </androidx.core.widget.NestedScrollView>
 
 </RelativeLayout>

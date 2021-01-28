@@ -47,4 +47,6 @@ public class CommonUtils {
 
     public static int treble;
 
+    public static int openTab;
+
 }

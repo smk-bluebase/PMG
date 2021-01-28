@@ -67,10 +67,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             getSupportFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
             getSupportFragmentManager()
                     .beginTransaction()
-                    .addToBackStack("profileFragment")
-                    .replace(R.id.fragment_container, new ProfileFragment(), "profileFragment")
+                    .addToBackStack("libraryFragment")
+                    .replace(R.id.fragment_container, new LibraryFragment(), "libraryFragment")
                     .commit();
-            navigationView.setCheckedItem(R.id.nav_profile);
+            navigationView.setCheckedItem(R.id.nav_library);
         }
 
     }
@@ -102,6 +102,24 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         .beginTransaction()
                         .addToBackStack("musicPlayerFragment")
                         .replace(R.id.fragment_container, new MusicPlayerFragment(), "musicPlayerFragment")
+                        .commit();
+                break;
+
+            case R.id.nav_playlists:
+                getSupportFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .addToBackStack("playlistsFragment")
+                        .replace(R.id.fragment_container, new PlaylistsFragment(), "playlistsFragment")
+                        .commit();
+                break;
+
+            case R.id.nav_favourites:
+                getSupportFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .addToBackStack("favouritesFragment")
+                        .replace(R.id.fragment_container, new FavouritesFragment(), "favouritesFragment")
                         .commit();
                 break;
 
