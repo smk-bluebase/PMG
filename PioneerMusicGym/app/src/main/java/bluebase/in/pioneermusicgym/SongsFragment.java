@@ -1,12 +1,12 @@
 package bluebase.in.pioneermusicgym;
 
-import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ListView;
+import android.widget.SearchView;
 import android.widget.Toast;
 
 import com.google.gson.JsonObject;
@@ -20,24 +20,35 @@ import java.util.ArrayList;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 public class SongsFragment extends Fragment {
-    Context context;
+    public static Context context;
 
-    ListView songsListView;
-    ProgressDialog progressDialog;
-    ArrayList<LibraryItems> itemList = new ArrayList<>();
+    public static RecyclerView songsRecyclerView;
+    public static ArrayList<SongItems> songsList;
+    public static SongAdapter songAdapter;
 
-    String url = CommonUtils.IP + "/PMG/pmg_android/";
-    String urlGetSongs = CommonUtils.IP + "/PMG/pmg_android/library_manager/getSongs.php";
+    public static String urlGetSongs = CommonUtils.IP + "/PMG/pmg_android/search/getSongs.php";
+    public static String urlSearchSongs = CommonUtils.IP + "/PMG/pmg_android/search/searchSongs.php";
 
+    public static JsonObject jsonObject;
+
+    public static int lowerLimit;
+    public static int upperLimit;
+    public static int searchLowerLimit;
+    public static int searchUpperLimit;
+
+    public static boolean isSearching = false;
+    public static String searchQuery = "";
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_songs, container, false);
 
-        songsListView = view.findViewById(R.id.songsListView);
+        songsRecyclerView = view.findViewById(R.id.songsRecyclerView);
 
         return view;
     }
@@ -48,61 +59,166 @@ public class SongsFragment extends Fragment {
 
         context = getContext();
 
-        progressDialog = new ProgressDialog(context);
-        progressDialog.setCancelable(false);
-        progressDialog.setMessage("Loading...");
-        progressDialog.show();
+        songsRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
 
-        PostGetSongs postGetSongs = new PostGetSongs(context);
+                if(!recyclerView.canScrollVertically(1)){
+                    if(isSearching){
+                        searchLowerLimit = searchUpperLimit;
+                        searchUpperLimit = searchUpperLimit + CommonUtils.queryLimit;
+
+                        getSongs(searchQuery, searchLowerLimit, searchUpperLimit, urlSearchSongs);
+                    }else{
+                        lowerLimit = upperLimit;
+                        upperLimit = upperLimit + CommonUtils.queryLimit;
+
+                        getSongs("", lowerLimit, upperLimit, urlGetSongs);
+                    }
+                }
+            }
+        });
+
+        songsList = new ArrayList<>();
+
+        lowerLimit = 0;
+        upperLimit = CommonUtils.queryLimit;
+
+        getSongs("", lowerLimit, upperLimit, urlGetSongs);
+    }
+
+    public static void onQuerySubmit(String query){
+        songsList = new ArrayList<>();
+
+        if(!query.equals("")) {
+            isSearching = true;
+            searchQuery = query;
+
+            searchLowerLimit = 0;
+            searchUpperLimit = CommonUtils.queryLimit;
+
+            getSongs(searchQuery, searchLowerLimit, searchUpperLimit, urlSearchSongs);
+        }else {
+            isSearching = false;
+            searchQuery = "";
+
+            lowerLimit = 0;
+            upperLimit = CommonUtils.queryLimit;
+
+            getSongs(searchQuery, lowerLimit, upperLimit, urlGetSongs);
+        }
+    }
+
+    public static void onQueryChange(String newText){
+        songsList = new ArrayList<>();
+
+        if(!newText.equals("")) {
+            isSearching = true;
+            searchQuery = newText;
+
+            searchLowerLimit = 0;
+            searchUpperLimit = CommonUtils.queryLimit;
+
+            getSongs(searchQuery, searchLowerLimit, searchUpperLimit, urlSearchSongs);
+        }else {
+            isSearching = false;
+            searchQuery = "";
+
+            lowerLimit = 0;
+            upperLimit = CommonUtils.queryLimit;
+
+            getSongs(searchQuery, lowerLimit, upperLimit, urlGetSongs);
+        }
+    }
+
+    public static void getSongs(String searchQuery, int lowerLimit, int upperLimit, String url){
+        jsonObject = new JsonObject();
+        jsonObject.addProperty("songName", searchQuery);
+        jsonObject.addProperty("lowerLimit", lowerLimit);
+        jsonObject.addProperty("upperLimit", upperLimit);
+
+        PostGetSongs postGetSongs = new PostGetSongs(context, url);
         postGetSongs.checkServerAvailability(2);
     }
 
-    private class PostGetSongs extends PostRequest{
-        public PostGetSongs(Context context){
+    public static class PostGetSongs extends PostRequest{
+        String url;
+
+        public PostGetSongs(Context context, String url){
             super(context);
+            this.url = url;
         }
 
+        @Override
         public void serverAvailability(boolean isServerAvailable) {
             if (isServerAvailable) {
-                super.postRequest(urlGetSongs, new JsonObject());
+                super.postRequest(url, jsonObject);
             } else {
                 Toast.makeText(context, "Connection to the server \nnot Available", Toast.LENGTH_SHORT).show();
-                progressDialog.dismiss();
             }
         }
 
         @Override
         public void onFinish(JSONArray jsonArray) {
-            System.out.println("jsonArray : " + jsonArray);
-            progressDialog.dismiss();
-
             try{
-                JSONObject jsonObject = (JSONObject) jsonArray.get(0);
-                System.out.println("jsonObject : " + jsonObject);
+                JSONObject jsonObject =  jsonArray.getJSONObject(0);
 
                 if(jsonObject.getBoolean("status")){
-                    JSONArray jsonArray1 = jsonObject.getJSONArray("songs");
+                    JSONArray songs = jsonObject.getJSONArray("songs");
 
-                    for (int i = 0; i < jsonArray1.length(); i++){
-                        JSONArray jsonArray2 = (JSONArray) jsonArray1.get(i);
+                    int j = 0;
 
-                        LibraryItems item = new LibraryItems();
-                        item.setSongTitle(jsonArray2.get(0).toString());
-                        item.setArtistName(jsonArray2.get(1).toString());
-                        item.setComposerName(jsonArray2.get(2).toString());
-                        item.setAlbumName(jsonArray2.get(3).toString());
-                        item.setMovieName(jsonArray2.get(4).toString());
-                        item.setDuration(jsonArray2.get(5).toString());
+                    for(int i = 0; i < songs.length(); i++){
+                        JSONArray song = songs.getJSONArray(i);
 
-                        itemList.add(item);
+                        int songId = 0;
+                        String songTitle = " ";
+                        String movieName = " ";
+                        String movieSinger = " ";
+                        String year = " ";
+                        String duration = " ";
+
+                        try {
+                            if(!song.getString(0).equals("")) songId = song.getInt(0);
+                            if(!song.getString(1).equals("")) songTitle = song.getString(1);
+                            if(!song.getString(2).equals("")) movieName = song.getString(2);
+                            if(!song.getString(3).equals("")) movieSinger = song.getString(3);
+                            if(!song.getString(4).equals("")) year = song.getString(4);
+                            if(!song.getString(5).equals("")) duration = song.getString(5);
+
+                            SongItems item = new SongItems();
+
+                            item.setSongId(songId);
+                            item.setSongTitle(songTitle);
+                            item.setMovieName(movieName);
+                            item.setMovieSinger(movieSinger);
+                            item.setYear(year);
+                            item.setDuration(duration);
+
+                            if (j == 0) j = 1;
+                            else j = 0;
+
+                            songsList.add(item);
+
+                        }catch (Exception e){
+                            e.printStackTrace();
+                        }
+
                     }
 
-                    LibraryAdapter libraryAdapter = new LibraryAdapter(context, itemList);
-                    songsListView.setAdapter(libraryAdapter);
-
+                    songsRecyclerView.setHasFixedSize(true);
+                    LinearLayoutManager linearLayoutManager = new LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false);
+                    songAdapter = new SongAdapter(songsList);
+                    songsRecyclerView.setLayoutManager(linearLayoutManager);
+                    songsRecyclerView.setAdapter(null);
+                    songsRecyclerView.setAdapter(songAdapter);
+                }else if(isSearching){
+                    Toast.makeText(context, "No Match Found", Toast.LENGTH_SHORT).show();
                 }else {
-                    Toast.makeText(context,"Username or Password Incorrect",Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "No Data", Toast.LENGTH_SHORT).show();
                 }
+
             }catch(JSONException e){
                 e.printStackTrace();
             }

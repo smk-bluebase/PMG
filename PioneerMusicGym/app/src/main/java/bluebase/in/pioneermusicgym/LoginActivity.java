@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -31,8 +32,8 @@ public class LoginActivity extends AppCompatActivity {
     EditText userNameEditText1;
     EditText passwordEditText;
 
-    String urlLogin = CommonUtils.IP + "PMG/pmg_android/login.php";
-    String urlForgotPassword = CommonUtils.IP + "PMG/pmg_android/forgotPasswordGenerator.php";
+    String urlLogin = CommonUtils.IP + "/PMG/pmg_android/login/login.php";
+    String urlForgotPassword = CommonUtils.IP + "/PMG/pmg_android/login/forgotPasswordGenerator.php";
 
     ProgressDialog progressDialog;
     Dialog dialog;

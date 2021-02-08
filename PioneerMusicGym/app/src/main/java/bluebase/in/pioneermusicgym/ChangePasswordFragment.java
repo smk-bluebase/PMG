@@ -32,7 +32,7 @@ public class ChangePasswordFragment extends Fragment {
     EditText newPasswordEditText;
     EditText retypePasswordEditText;
 
-    String urlChangePassword = CommonUtils.IP + "PMG/pmg_android/changePassword.php";
+    String urlChangePassword = CommonUtils.IP + "/PMG/pmg_android/user_settings/changePassword.php";
 
     @Nullable
     @Override

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">PMG</string>
+    <string name="app_name">PMG Play</string>
 
     <!--  Navigation Drawer  -->
     <string name="navigation_drawer_open">Open navigation drawer</string>

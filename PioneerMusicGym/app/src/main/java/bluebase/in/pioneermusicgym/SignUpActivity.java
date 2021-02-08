@@ -29,8 +29,8 @@ public class SignUpActivity extends AppCompatActivity {
     JsonObject jsonObject;
     Dialog dialog;
 
-    String urlSignUp = CommonUtils.IP + "PMG/pmg_android/signup.php";
-    String urlOTPVerifier = CommonUtils.IP + "PMG/pmg_android/otpVerifier.php";
+    String urlSignUp = CommonUtils.IP + "/PMG/pmg_android/login/signup.php";
+    String urlOTPVerifier = CommonUtils.IP + "/PMG/pmg_android/login/otpVerifier.php";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

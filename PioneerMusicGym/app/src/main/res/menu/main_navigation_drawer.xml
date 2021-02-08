@@ -59,22 +59,4 @@
 
         </item>
 
-    <item android:title="Rate and Share">
-
-        <menu>
-
-            <item
-                android:id="@+id/nav_rate"
-                android:icon="@drawable/rate"
-                android:title="Rate App" />
-
-            <item
-                android:id="@+id/nav_share"
-                android:icon="@drawable/share"
-                android:title="Share App" />
-
-        </menu>
-
-    </item>
-
 </menu>

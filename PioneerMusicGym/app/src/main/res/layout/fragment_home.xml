@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -23,9 +24,13 @@
         android:visibility="visible">
 
         <SearchView
+            android:id="@+id/searchHomeSearchView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Search Library" />
+            android:queryHint="Search Home"
+            android:iconifiedByDefault="false"
+            app:showAsAction="always"
+            android:queryBackground="@android:color/transparent" />
 
     </androidx.cardview.widget.CardView>
 
@@ -43,26 +48,28 @@
             android:background="@color/white">
 
             <TextView
-                android:id="@+id/artistTitle"
+                android:id="@+id/singerTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Artists"
+                android:text="Singers"
                 android:textColor="@color/black"
                 android:textSize="22sp"
                 android:layout_marginTop="30dp"
                 android:layout_marginLeft="15dp"
                 android:layout_marginBottom="15dp" />
 
-            <ListView
-                android:id="@+id/artistsListView"
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/singerRecyclerView"
+                android:scrollbars="horizontal"
                 android:layout_width="match_parent"
-                android:layout_height="200dp"
+                android:layout_height="230dp"
                 android:clipToPadding="false"
-                android:layout_below="@id/artistTitle"
-                android:background="@drawable/background1" />
+                android:layout_below="@id/singerTitle"
+                android:background="@drawable/background1"
+                android:paddingTop="5dp"/>
 
             <TextView
-                android:id="@+id/composersTitle"
+                android:id="@+id/composerTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Composers"
@@ -71,38 +78,20 @@
                 android:layout_marginTop="30dp"
                 android:layout_marginLeft="15dp"
                 android:layout_marginBottom="15dp"
-                android:layout_below="@id/artistsListView"/>
+                android:layout_below="@id/singerRecyclerView"/>
 
-            <ListView
-                android:id="@+id/composersListView"
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/composerRecyclerView"
+                android:scrollbars="horizontal"
                 android:layout_width="match_parent"
-                android:layout_height="200dp"
+                android:layout_height="230dp"
                 android:clipToPadding="false"
-                android:layout_below="@id/composersTitle"
-                android:background="@drawable/background2" />
+                android:layout_below="@id/composerTitle"
+                android:background="@drawable/background2"
+                android:paddingTop="5dp"/>
 
             <TextView
-                android:id="@+id/albumsTitle"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Albums"
-                android:textColor="@color/black"
-                android:textSize="22sp"
-                android:layout_marginTop="30dp"
-                android:layout_marginLeft="15dp"
-                android:layout_marginBottom="15dp"
-                android:layout_below="@id/composersListView"/>
-
-            <ListView
-                android:id="@+id/albumsListView"
-                android:layout_width="match_parent"
-                android:layout_height="200dp"
-                android:clipToPadding="false"
-                android:layout_below="@id/albumsTitle"
-                android:background="@drawable/background3" />
-
-            <TextView
-                android:id="@+id/moviesTitle"
+                android:id="@+id/movieTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Movies"
@@ -111,15 +100,39 @@
                 android:layout_marginTop="30dp"
                 android:layout_marginLeft="15dp"
                 android:layout_marginBottom="15dp"
-                android:layout_below="@id/albumsListView"/>
+                android:layout_below="@id/composerRecyclerView"/>
 
-            <ListView
-                android:id="@+id/moviesListView"
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/movieRecyclerView"
+                android:scrollbars="horizontal"
                 android:layout_width="match_parent"
-                android:layout_height="200dp"
+                android:layout_height="230dp"
                 android:clipToPadding="false"
-                android:layout_below="@id/moviesTitle"
+                android:layout_below="@id/movieTitle"
                 android:background="@drawable/background4"
+                android:paddingTop="5dp" />
+
+            <TextView
+                android:id="@+id/playlistTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Playlists"
+                android:textColor="@color/black"
+                android:textSize="22sp"
+                android:layout_marginTop="30dp"
+                android:layout_marginLeft="15dp"
+                android:layout_marginBottom="15dp"
+                android:layout_below="@id/movieRecyclerView"/>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/playlistRecyclerView"
+                android:scrollbars="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="230dp"
+                android:clipToPadding="false"
+                android:layout_below="@id/playlistTitle"
+                android:background="@drawable/background3"
+                android:paddingTop="5dp"
                 android:layout_marginBottom="30dp" />
 
         </RelativeLayout>
