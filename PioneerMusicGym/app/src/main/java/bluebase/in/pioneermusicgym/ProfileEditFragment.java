@@ -49,8 +49,8 @@ public class ProfileEditFragment extends Fragment {
 
     String originalUserName;
 
-    String urlGetProfile = CommonUtils.IP + "PMG/pmg_android/getProfileDetails.php";
-    String urlEditProfile = CommonUtils.IP + "PMG/pmg_android/editProfileDetails.php";
+    String urlGetProfile = CommonUtils.IP + "/PMG/pmg_android/user_settings/getProfileDetails.php";
+    String urlEditProfile = CommonUtils.IP + "/PMG/pmg_android/user_settings/editProfileDetails.php";
 
     String[] genderArr = {"Male", "Female", "Other"};
 

@@ -6,10 +6,12 @@ import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 import com.github.barteksc.pdfviewer.PDFView;
+import com.github.barteksc.pdfviewer.util.FitPolicy;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -17,6 +19,8 @@ import androidx.fragment.app.Fragment;
 
 public class MusicPlayerFragment extends Fragment {
     Context context;
+
+    Button playSongButton;
 
     PDFView pdfView;
 
@@ -35,6 +39,8 @@ public class MusicPlayerFragment extends Fragment {
         layoutParams.setMargins(0, 0, 200, height);
         background.setLayoutParams(layoutParams);
 
+        playSongButton = view.findViewById(R.id.playSongButton);
+
         pdfView = view.findViewById(R.id.pdfView);
 
         return view;
@@ -47,7 +53,17 @@ public class MusicPlayerFragment extends Fragment {
         context = getContext();
 
         pdfView.fromAsset("1.pdf")
-            .load();
+                .enableSwipe(true)
+                .swipeHorizontal(true)
+                .enableDoubletap(true)
+                .defaultPage(0)
+                .enableAnnotationRendering(false)
+                .password(null)
+                .scrollHandle(null)
+                .enableAntialiasing(true)
+                .spacing(0)
+                .pageFitPolicy(FitPolicy.WIDTH)
+                .load();
     }
 
 }

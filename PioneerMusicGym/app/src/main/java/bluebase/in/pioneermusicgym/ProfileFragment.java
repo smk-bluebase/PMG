@@ -37,7 +37,7 @@ public class ProfileFragment extends Fragment {
     TextView experience;
     TextView languagesKnown;
 
-    String urlGetProfile = CommonUtils.IP + "PMG/pmg_android/getProfileDetails.php";
+    String urlGetProfile = CommonUtils.IP + "/PMG/pmg_android/user_settings/getProfileDetails.php";
 
     @Nullable
     @Override

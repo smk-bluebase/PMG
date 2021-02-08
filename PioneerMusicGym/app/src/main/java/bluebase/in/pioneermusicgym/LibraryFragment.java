@@ -4,14 +4,13 @@ import android.content.Context;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.RelativeLayout;
+import android.widget.SearchView;
 
-import com.github.barteksc.pdfviewer.PDFView;
 import com.google.android.material.tabs.TabLayout;
 
 import java.util.ArrayList;
@@ -20,16 +19,18 @@ import java.util.List;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
 public class LibraryFragment extends Fragment {
     Context context;
 
-    ViewPager viewPager;
-    PagerAdapter pagerAdapter;
+    ViewPager viewPager1;
+    PagerAdapter pagerAdapter1;
     TabLayout libraryTabLayout;
+
+    public static SearchView searchView;
 
     @Nullable
     @Override
@@ -49,19 +50,18 @@ public class LibraryFragment extends Fragment {
         List<Fragment> fragmentList = new ArrayList<>();
         fragmentList.add(new SongsFragment());
         fragmentList.add(new ArtistsFragment());
-        fragmentList.add(new CollectionsFragment());
+        fragmentList.add(new MoviesFragment());
 
         List<String> titlesList = new ArrayList<>();
         titlesList.add("SONGS");
         titlesList.add("ARTISTS");
-        titlesList.add("COLLECTIONS");
+        titlesList.add("MOVIES");
 
-        viewPager = view.findViewById(R.id.viewPager);
-        pagerAdapter = new SectionsPagerAdapter(context, getFragmentManager(),fragmentList, titlesList);
-        viewPager.setAdapter(pagerAdapter);
+        viewPager1 = view.findViewById(R.id.viewPager);
         libraryTabLayout = view.findViewById(R.id.libraryTabLayout);
-        libraryTabLayout.setupWithViewPager(viewPager);
-        CommonUtils.openTab = 1;
+        pagerAdapter1 = new SectionsPagerAdapter(context, getFragmentManager(), fragmentList, titlesList);
+
+        searchView = view.findViewById(R.id.searchLibrarySearchView);
 
         return view;
     }
@@ -72,23 +72,30 @@ public class LibraryFragment extends Fragment {
 
         context = getContext();
 
+        viewPager1.setAdapter(pagerAdapter1);
+        libraryTabLayout.setupWithViewPager(viewPager1);
+        CommonUtils.openTab = 1;
+
+        searchView.setImeOptions(EditorInfo.IME_ACTION_DONE);
+
         libraryTabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
                 switch(tab.getPosition()){
                     case 0:
                         CommonUtils.openTab = 1;
-                        System.out.println("Songs Fragment");
+                        searchView.setQuery("", false);
                         break;
 
                     case 1:
                         CommonUtils.openTab = 2;
-                        System.out.println("Singers Fragment");
+                        searchView.setQuery("", false);
                         break;
 
                     case 2:
                         CommonUtils.openTab = 4;
-                        System.out.println("Movies Fragment");
+                        searchView.setQuery("", false);
+                        break;
 
                     default:
                         // Do Nothing!
@@ -103,6 +110,70 @@ public class LibraryFragment extends Fragment {
             @Override
             public void onTabReselected(TabLayout.Tab tab) {
                 // Do Nothing!
+            }
+        });
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                searchView.clearFocus();
+
+                switch (CommonUtils.openTab){
+                    case 1:
+                        SongsFragment.onQuerySubmit(query);
+                        break;
+                    case 2:
+                        SingersFragment.onQuerySubmit(query);
+                        break;
+                    case 3:
+                        ComposersFragment.onQuerySubmit(query);
+                        break;
+                    case 4:
+                        TamilFragment.onQuerySubmit(query);
+                        break;
+                    case 5:
+                        MalayalamFragment.onQuerySubmit(query);
+                        break;
+                    case 6:
+                        HindiFragment.onQuerySubmit(query);
+                        break;
+
+                    default:
+                        //  Do Nothing!
+                }
+
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                System.out.println("CommonUtils.openTab : " + CommonUtils.openTab);
+
+                switch (CommonUtils.openTab){
+                    case 1:
+                        SongsFragment.onQueryChange(newText);
+                        break;
+                    case 2:
+                        SingersFragment.onQueryChange(newText);
+                        break;
+                    case 3:
+                        ComposersFragment.onQueryChange(newText);
+                        break;
+                    case 4:
+                        TamilFragment.onQueryChange(newText);
+                        break;
+                    case 5:
+                        MalayalamFragment.onQueryChange(newText);
+                        break;
+                    case 6:
+                        HindiFragment.onQueryChange(newText);
+                        break;
+
+                    default:
+                        //  Do Nothing!
+                }
+
+                return false;
             }
         });
 

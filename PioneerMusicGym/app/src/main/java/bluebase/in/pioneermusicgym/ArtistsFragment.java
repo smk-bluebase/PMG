@@ -20,8 +20,8 @@ import androidx.viewpager.widget.ViewPager;
 public class ArtistsFragment extends Fragment {
     Context context;
 
-    ViewPager viewPager;
-    PagerAdapter pagerAdapter;
+    ViewPager viewPager2;
+    PagerAdapter pagerAdapter2;
     TabLayout artistsTabLayout;
 
     @Nullable
@@ -37,11 +37,9 @@ public class ArtistsFragment extends Fragment {
         titlesList.add("SINGERS");
         titlesList.add("COMPOSERS");
 
-        viewPager = view.findViewById(R.id.artistsViewPager);
-        pagerAdapter = new SectionsPagerAdapter(context, getFragmentManager(),fragmentList, titlesList);
-        viewPager.setAdapter(pagerAdapter);
+        viewPager2 = view.findViewById(R.id.artistsViewPager);
+        pagerAdapter2 = new SectionsPagerAdapter(context, getFragmentManager(),fragmentList, titlesList);
         artistsTabLayout = view.findViewById(R.id.artistsTabLayout);
-        artistsTabLayout.setupWithViewPager(viewPager);
 
         return view;
     }
@@ -52,18 +50,21 @@ public class ArtistsFragment extends Fragment {
 
         context = getContext();
 
+        viewPager2.setAdapter(pagerAdapter2);
+        artistsTabLayout.setupWithViewPager(viewPager2);
+
         artistsTabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
                 switch(tab.getPosition()){
                     case 0:
                         CommonUtils.openTab = 2;
-                        System.out.println("Singers Fragment");
+                        LibraryFragment.searchView.setQuery("", false);
                         break;
 
                     case 1:
                         CommonUtils.openTab = 3;
-                        System.out.println("Composers Fragment");
+                        LibraryFragment.searchView.setQuery("", false);
                         break;
 
                     default:

@@ -150,23 +150,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         .commit();
                 break;
 
-            case R.id.nav_rate:
-                try {
-                    startActivity(new Intent(Intent.ACTION_VIEW,
-                            Uri.parse("market://details?id=" + this.getPackageName())));
-                } catch (android.content.ActivityNotFoundException e) {
-                    startActivity(new Intent(Intent.ACTION_VIEW,
-                            Uri.parse("http://play.google.com/store/apps/details?id=" + this.getPackageName())));
-                }
-                break;
-
-            case R.id.nav_share:
-                Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
-                sharingIntent.setType("text/plain");
-                sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "App to learn singing music");
-                startActivity(Intent.createChooser(sharingIntent, "Share via"));
-                break;
-
             default:
                 // Do Nothing!
 
