@@ -17,6 +17,15 @@ import androidx.recyclerview.widget.RecyclerView;
 public class ComposerAdapter extends RecyclerView.Adapter<ComposerAdapter.ComposerViewHolder> implements Filterable {
     private ArrayList<ComposerItems> composerItemsArrayList;
     private ArrayList<ComposerItems> composerItemsArrayListFull;
+    private OnItemClickListener mlistener;
+
+    public interface OnItemClickListener {
+        void onItemClick(int position);
+    }
+
+    public void setOnItemClickListener(OnItemClickListener listener) {
+        mlistener = listener;
+    }
 
     public static class ComposerViewHolder extends RecyclerView.ViewHolder {
         private int composerId;
@@ -25,12 +34,21 @@ public class ComposerAdapter extends RecyclerView.Adapter<ComposerAdapter.Compos
         private TextView numberOfMovies;
         private RelativeLayout composerItemRelativeLayout;
 
-        public ComposerViewHolder (View itemView) {
+        public ComposerViewHolder (View itemView, final OnItemClickListener listener) {
             super(itemView);
             composerTitle = itemView.findViewById(R.id.artistTitle);
             numberOfSongs = itemView.findViewById(R.id.numberOfSongs);
             numberOfMovies = itemView.findViewById(R.id.numberOfMovies);
             composerItemRelativeLayout = itemView.findViewById(R.id.artistItemRelativeLayout);
+
+            itemView.setOnClickListener(v -> {
+                if (listener != null) {
+                    int position = getAdapterPosition();
+                    if (position != RecyclerView.NO_POSITION) {
+                        listener.onItemClick(position);
+                    }
+                }
+            });
         }
 
     }
@@ -43,7 +61,7 @@ public class ComposerAdapter extends RecyclerView.Adapter<ComposerAdapter.Compos
     @Override
     public ComposerAdapter.ComposerViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.artist_item, parent, false);
-        ComposerAdapter.ComposerViewHolder composerViewHolder = new ComposerAdapter.ComposerViewHolder(v);
+        ComposerAdapter.ComposerViewHolder composerViewHolder = new ComposerAdapter.ComposerViewHolder(v, mlistener);
         return composerViewHolder;
     }
 
@@ -106,5 +124,9 @@ public class ComposerAdapter extends RecyclerView.Adapter<ComposerAdapter.Compos
             notifyDataSetChanged();
         }
     };
+
+    public ArrayList<ComposerItems> getData() {
+        return composerItemsArrayList;
+    }
 
 }

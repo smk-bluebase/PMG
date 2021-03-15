@@ -59,8 +59,6 @@ public abstract class PostRequest {
         }catch(Exception e){
             e.printStackTrace();
         }
-        System.out.println("url : " + url);
-        System.out.println("data : " + data);
 
         AsyncPostRequest asyncPostRequest = new AsyncPostRequest();
         asyncPostRequest.execute(url, data);

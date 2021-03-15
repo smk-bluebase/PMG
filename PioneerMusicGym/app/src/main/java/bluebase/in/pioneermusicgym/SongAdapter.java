@@ -17,6 +17,15 @@ import androidx.recyclerview.widget.RecyclerView;
 public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder> implements Filterable {
     private ArrayList<SongItems> songItemsArrayList;
     private ArrayList<SongItems> songItemsArrayListFull;
+    private OnItemClickListener mlistener;
+
+    public interface OnItemClickListener {
+        void onItemClick(int position);
+    }
+
+    public void setOnItemClickListener(OnItemClickListener listener) {
+        mlistener = listener;
+    }
 
     public static class SongViewHolder extends RecyclerView.ViewHolder {
         private int songId;
@@ -25,12 +34,21 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
         private TextView duration;
         private RelativeLayout songItemRelativeLayout;
 
-        public SongViewHolder (View itemView) {
+        public SongViewHolder (View itemView, final OnItemClickListener listener) {
             super(itemView);
             songTitle = itemView.findViewById(R.id.songTitle);
             subMenu = itemView.findViewById(R.id.subMenu);
             duration = itemView.findViewById(R.id.duration);
             songItemRelativeLayout = itemView.findViewById(R.id.songItemRelativeLayout);
+
+            itemView.setOnClickListener(v -> {
+                if (listener != null) {
+                    int position = getAdapterPosition();
+                    if (position != RecyclerView.NO_POSITION) {
+                        listener.onItemClick(position);
+                    }
+                }
+            });
         }
 
     }
@@ -43,7 +61,7 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
     @Override
     public SongAdapter.SongViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.song_item, parent, false);
-        SongAdapter.SongViewHolder songViewHolder = new SongAdapter.SongViewHolder(v);
+        SongAdapter.SongViewHolder songViewHolder = new SongAdapter.SongViewHolder(v, mlistener);
         return songViewHolder;
     }
 
@@ -113,5 +131,13 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
             notifyDataSetChanged();
         }
     };
+
+    public ArrayList<SongItems> getData() {
+        return songItemsArrayList;
+    }
+
+    public int getPosition(SongItems item){
+        return songItemsArrayListFull.indexOf(item);
+    }
 
 }

@@ -1,5 +1,6 @@
 package bluebase.in.pioneermusicgym;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -14,6 +15,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 import androidx.annotation.NonNull;
@@ -29,18 +31,20 @@ public class SingersFragment extends Fragment {
     public static ArrayList<SingerItems> singerList;
     public static SingerAdapter singerAdapter;
 
-    public static String urlGetSingers = CommonUtils.IP + "/PMG/pmg_android/search/getSingers.php";
-    public static String urlSearchSingers = CommonUtils.IP + "/PMG/pmg_android/search/searchSingers.php";
+    public static String urlGetSingers = CommonUtils.IP + "/pmg_android/search/getSingers.php";
+    public static String urlSearchSingers = CommonUtils.IP + "/pmg_android/search/searchSingers.php";
 
     public static JsonObject jsonObject;
 
-    public static int lowerLimit;
-    public static int upperLimit;
-    public static int searchLowerLimit;
-    public static int searchUpperLimit;
+    public static int singerIndex;
+    public static int searchSingerIndex;
 
     public static boolean isSearching = false;
     public static String searchQuery = "";
+    public static boolean isScrolling = false;
+    public static boolean isSingerAvailable = true;
+
+    public static boolean isLoaded = false;
 
     @Nullable
     @Override
@@ -58,96 +62,114 @@ public class SingersFragment extends Fragment {
 
         context = getContext();
 
-        singerRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
-                super.onScrollStateChanged(recyclerView, newState);
+        isLoaded = true;
 
-                if(!recyclerView.canScrollVertically(1)){
-                    if(isSearching){
-                        searchLowerLimit = searchUpperLimit;
-                        searchUpperLimit = searchUpperLimit + CommonUtils.queryLimit;
+        if(CommonUtils.isHomeSearching) ArtistsFragment.onLoaded(0);
+    }
 
-                        getSingers(searchQuery, searchLowerLimit, searchUpperLimit, urlSearchSingers);
-                    }else{
-                        lowerLimit = upperLimit;
-                        upperLimit = upperLimit + CommonUtils.queryLimit;
+    public static void onOpen(){
+         if(isLoaded) {
+            LibraryFragment.searchView.setQuery("", false);
 
-                        getSingers("", lowerLimit, upperLimit, urlGetSingers);
+            singerRecyclerView.clearOnScrollListeners();
+
+            singerRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+                @Override
+                public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                    super.onScrollStateChanged(recyclerView, newState);
+
+                    if (!recyclerView.canScrollVertically(1) && isSingerAvailable) {
+                        if (isSearching) {
+                            searchSingerIndex = searchSingerIndex + CommonUtils.queryLimit;
+                            getSingers(searchQuery, searchSingerIndex, CommonUtils.queryLimit, urlSearchSingers);
+                        } else {
+                            singerIndex = singerIndex + CommonUtils.queryLimit;
+                            getSingers("", singerIndex, CommonUtils.queryLimit, urlGetSingers);
+                        }
+
+                        isScrolling = true;
                     }
                 }
-            }
-        });
+            });
 
-        singerList = new ArrayList<>();
+            singerIndex = 0;
+            searchSingerIndex = 0;
 
-        lowerLimit = 0;
-        upperLimit = CommonUtils.queryLimit;
+            isSearching = false;
+            searchQuery = "";
+            isScrolling = false;
+            isSingerAvailable = true;
 
-        getSingers("", lowerLimit, upperLimit, urlGetSingers);
+            singerList = new ArrayList<>();
 
+            getSingers("", singerIndex, CommonUtils.queryLimit, urlGetSingers);
+        }
     }
 
     public static void onQuerySubmit(String query){
         singerList = new ArrayList<>();
+        isSingerAvailable = true;
 
         if(!query.equals("")) {
             isSearching = true;
             searchQuery = query;
+            isScrolling = false;
 
-            searchLowerLimit = 0;
-            searchUpperLimit = CommonUtils.queryLimit;
+            searchSingerIndex = 0;
 
-            getSingers(searchQuery, searchLowerLimit, searchUpperLimit, urlSearchSingers);
+            getSingers(searchQuery, searchSingerIndex, CommonUtils.queryLimit, urlSearchSingers);
         }else {
             isSearching = false;
             searchQuery = "";
+            isScrolling = true;
 
-            lowerLimit = 0;
-            upperLimit = CommonUtils.queryLimit;
+            singerIndex = 0;
 
-            getSingers(searchQuery, lowerLimit, upperLimit, urlGetSingers);
+            getSingers(searchQuery, singerIndex, CommonUtils.queryLimit, urlGetSingers);
         }
     }
 
     public static void onQueryChange(String newText){
         singerList = new ArrayList<>();
+        isSingerAvailable = true;
 
         if(!newText.equals("")) {
             isSearching = true;
             searchQuery = newText;
+            isScrolling = false;
 
-            searchLowerLimit = 0;
-            searchUpperLimit = CommonUtils.queryLimit;
+            searchSingerIndex = 0;
 
-            getSingers(searchQuery, searchLowerLimit, searchUpperLimit, urlSearchSingers);
+            getSingers(searchQuery, searchSingerIndex, CommonUtils.queryLimit, urlSearchSingers);
         }else {
             isSearching = false;
             searchQuery = "";
+            isScrolling = true;
 
-            lowerLimit = 0;
-            upperLimit = CommonUtils.queryLimit;
+            singerIndex = 0;
 
-            getSingers(searchQuery, lowerLimit, upperLimit, urlGetSingers);
+            getSingers(searchQuery, singerIndex, CommonUtils.queryLimit, urlGetSingers);
         }
     }
 
-    public static void getSingers(String searchQuery, int lowerLimit, int upperLimit, String url){
+    public static void getSingers(String searchQuery, int index, int limit, String url){
         jsonObject = new JsonObject();
         jsonObject.addProperty("singerName", searchQuery);
-        jsonObject.addProperty("lowerLimit", lowerLimit);
-        jsonObject.addProperty("upperLimit", upperLimit);
+        jsonObject.addProperty("index", index);
+        jsonObject.addProperty("limit", limit);
 
-        PostSingers postSingers = new PostSingers(context, url);
+        PostSingers postSingers = new PostSingers(context, url, index);
         postSingers.checkServerAvailability(2);
     }
 
     public static class PostSingers extends PostRequest{
         String url;
+        int index;
 
-        public PostSingers(Context context, String url){
+        public PostSingers(Context context, String url, int index){
             super(context);
             this.url = url;
+            this.index = index;
         }
 
         @Override
@@ -161,11 +183,13 @@ public class SingersFragment extends Fragment {
 
         @Override
         public void onFinish(JSONArray jsonArray){
-            try{
-                JSONObject jsonObject =  jsonArray.getJSONObject(0);
+            if(index == 0) singerList = new ArrayList<>();
 
-                if(jsonObject.getBoolean("status")){
-                    JSONArray singers = jsonObject.getJSONArray("singers");
+            try{
+                JSONObject jsonObject1 =  jsonArray.getJSONObject(0);
+
+                if(jsonObject1.getBoolean("status")){
+                    JSONArray singers = jsonObject1.getJSONArray("singers");
 
                     for(int i = 0; i < singers.length(); i++){
                         JSONArray singer = singers.getJSONArray(i);
@@ -196,21 +220,36 @@ public class SingersFragment extends Fragment {
 
                     }
 
-                    singerRecyclerView.setHasFixedSize(true);
-                    LinearLayoutManager linearLayoutManager = new LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false);
-                    singerAdapter = new SingerAdapter(singerList);
-                    singerRecyclerView.setLayoutManager(linearLayoutManager);
-                    singerRecyclerView.setAdapter(null);
-                    singerRecyclerView.setAdapter(singerAdapter);
+                    populateSingers();
+
+                }else if(isScrolling){
+                    Toast.makeText(context, "No More Data", Toast.LENGTH_SHORT).show();
+                    isSingerAvailable = false;
                 }else if(isSearching){
                     Toast.makeText(context, "No Match Found", Toast.LENGTH_SHORT).show();
-                }else {
-                    Toast.makeText(context, "No Data", Toast.LENGTH_SHORT).show();
+                    isSingerAvailable = false;
+                    populateSingers();
                 }
 
             }catch(JSONException e){
                 e.printStackTrace();
             }
+        }
+
+        public void populateSingers(){
+            singerRecyclerView.setHasFixedSize(true);
+            LinearLayoutManager linearLayoutManager = new LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false);
+            linearLayoutManager.scrollToPosition(index);
+            singerAdapter = new SingerAdapter(new ArrayList<>(singerList));
+            singerRecyclerView.setLayoutManager(linearLayoutManager);
+            singerRecyclerView.setAdapter(null);
+            singerRecyclerView.setAdapter(singerAdapter);
+
+            singerAdapter.setOnItemClickListener(position -> {
+                CommonUtils.isSearching = true;
+                LibraryFragment.viewPager1.setCurrentItem(2);
+                LibraryFragment.searchView.setQuery("SingerId : " + singerAdapter.getData().get(position).getSingerId(), true);
+            });
         }
     }
 

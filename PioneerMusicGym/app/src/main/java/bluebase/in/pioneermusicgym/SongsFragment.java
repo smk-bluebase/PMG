@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -30,18 +31,22 @@ public class SongsFragment extends Fragment {
     public static ArrayList<SongItems> songsList;
     public static SongAdapter songAdapter;
 
-    public static String urlGetSongs = CommonUtils.IP + "/PMG/pmg_android/search/getSongs.php";
-    public static String urlSearchSongs = CommonUtils.IP + "/PMG/pmg_android/search/searchSongs.php";
+    public static String urlGetSongs = CommonUtils.IP + "/pmg_android/search/getSongs.php";
+    public static String urlSearchSongs = CommonUtils.IP + "/pmg_android/search/searchSongs.php";
+    public static String urlMovieSongs = CommonUtils.IP + "/pmg_android/search/getMovieSongs.php";
 
     public static JsonObject jsonObject;
 
-    public static int lowerLimit;
-    public static int upperLimit;
-    public static int searchLowerLimit;
-    public static int searchUpperLimit;
+    public static int songIndex;
+    public static int searchSongIndex;
 
     public static boolean isSearching = false;
     public static String searchQuery = "";
+    public static boolean isScrolling = false;
+    public static boolean isSongsAvailable = true;
+
+    public static boolean isLoaded = false;
+
 
     @Nullable
     @Override
@@ -59,95 +64,135 @@ public class SongsFragment extends Fragment {
 
         context = getContext();
 
-        songsRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
-                super.onScrollStateChanged(recyclerView, newState);
+        isLoaded = true;
 
-                if(!recyclerView.canScrollVertically(1)){
-                    if(isSearching){
-                        searchLowerLimit = searchUpperLimit;
-                        searchUpperLimit = searchUpperLimit + CommonUtils.queryLimit;
+        if(CommonUtils.isHomeSearching) LibraryFragment.onLoaded();
+        else onOpen();
+    }
 
-                        getSongs(searchQuery, searchLowerLimit, searchUpperLimit, urlSearchSongs);
-                    }else{
-                        lowerLimit = upperLimit;
-                        upperLimit = upperLimit + CommonUtils.queryLimit;
+    public static void onOpen(){
+        if(isLoaded) {
+            LibraryFragment.searchView.setQuery("", false);
 
-                        getSongs("", lowerLimit, upperLimit, urlGetSongs);
+            songsRecyclerView.clearOnScrollListeners();
+
+            songsRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+                @Override
+                public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                    super.onScrollStateChanged(recyclerView, newState);
+
+                    if (!recyclerView.canScrollVertically(1) && isSongsAvailable) {
+                        if (isSearching) {
+                            searchSongIndex = searchSongIndex + CommonUtils.queryLimit;
+                            getSongs(searchQuery, searchSongIndex, CommonUtils.queryLimit, urlSearchSongs);
+                        } else {
+                            songIndex = songIndex + CommonUtils.queryLimit;
+                            getSongs("", songIndex, CommonUtils.queryLimit, urlGetSongs);
+                        }
+
+                        isScrolling = true;
                     }
                 }
-            }
-        });
+            });
 
-        songsList = new ArrayList<>();
+            songIndex = 0;
+            searchSongIndex = 0;
 
-        lowerLimit = 0;
-        upperLimit = CommonUtils.queryLimit;
+            isSearching = false;
+            searchQuery = "";
+            isScrolling = false;
+            isSongsAvailable = true;
 
-        getSongs("", lowerLimit, upperLimit, urlGetSongs);
+            songsList = new ArrayList<>();
+
+            getSongs("", songIndex, CommonUtils.queryLimit, urlGetSongs);
+        }
     }
 
     public static void onQuerySubmit(String query){
         songsList = new ArrayList<>();
+        isSongsAvailable = true;
 
         if(!query.equals("")) {
             isSearching = true;
-            searchQuery = query;
+            isScrolling = false;
 
-            searchLowerLimit = 0;
-            searchUpperLimit = CommonUtils.queryLimit;
+            searchSongIndex = 0;
 
-            getSongs(searchQuery, searchLowerLimit, searchUpperLimit, urlSearchSongs);
+            if(query.startsWith("MovieId : ")){
+                searchQuery = query.substring(10);
+                getMovieSongs(searchQuery, searchSongIndex, urlMovieSongs);
+            }else{
+                searchQuery = query;
+                getSongs(searchQuery, searchSongIndex, CommonUtils.queryLimit, urlSearchSongs);
+            }
+
         }else {
             isSearching = false;
             searchQuery = "";
+            isScrolling = true;
 
-            lowerLimit = 0;
-            upperLimit = CommonUtils.queryLimit;
+            songIndex = 0;
 
-            getSongs(searchQuery, lowerLimit, upperLimit, urlGetSongs);
+            getSongs(searchQuery, songIndex, CommonUtils.queryLimit, urlGetSongs);
         }
     }
 
     public static void onQueryChange(String newText){
         songsList = new ArrayList<>();
+        isSongsAvailable = true;
 
         if(!newText.equals("")) {
             isSearching = true;
-            searchQuery = newText;
+            isScrolling = false;
 
-            searchLowerLimit = 0;
-            searchUpperLimit = CommonUtils.queryLimit;
+            searchSongIndex = 0;
 
-            getSongs(searchQuery, searchLowerLimit, searchUpperLimit, urlSearchSongs);
+            if(newText.startsWith("MovieId : ")){
+                searchQuery = newText.substring(10);
+                getMovieSongs(searchQuery, searchSongIndex, urlMovieSongs);
+            }else{
+                searchQuery = newText;
+                getSongs(searchQuery, searchSongIndex, CommonUtils.queryLimit, urlSearchSongs);
+            }
+
         }else {
             isSearching = false;
             searchQuery = "";
+            isScrolling = true;
 
-            lowerLimit = 0;
-            upperLimit = CommonUtils.queryLimit;
+            songIndex = 0;
 
-            getSongs(searchQuery, lowerLimit, upperLimit, urlGetSongs);
+            getSongs(searchQuery, songIndex, CommonUtils.queryLimit, urlGetSongs);
         }
     }
 
-    public static void getSongs(String searchQuery, int lowerLimit, int upperLimit, String url){
+    public static void getSongs(String searchQuery, int index, int limit, String url){
         jsonObject = new JsonObject();
         jsonObject.addProperty("songName", searchQuery);
-        jsonObject.addProperty("lowerLimit", lowerLimit);
-        jsonObject.addProperty("upperLimit", upperLimit);
+        jsonObject.addProperty("index", index);
+        jsonObject.addProperty("limit", limit);
 
-        PostGetSongs postGetSongs = new PostGetSongs(context, url);
+        PostGetSongs postGetSongs = new PostGetSongs(context, url, index);
+        postGetSongs.checkServerAvailability(2);
+    }
+
+    public static void getMovieSongs(String searchQuery, int index, String url){
+        jsonObject = new JsonObject();
+        jsonObject.addProperty("movieId", searchQuery);
+
+        PostGetSongs postGetSongs = new PostGetSongs(context, url, index);
         postGetSongs.checkServerAvailability(2);
     }
 
     public static class PostGetSongs extends PostRequest{
         String url;
+        int index;
 
-        public PostGetSongs(Context context, String url){
+        public PostGetSongs(Context context, String url, int index){
             super(context);
             this.url = url;
+            this.index = index;
         }
 
         @Override
@@ -161,31 +206,31 @@ public class SongsFragment extends Fragment {
 
         @Override
         public void onFinish(JSONArray jsonArray) {
+            if(index == 0) songsList = new ArrayList<>();
+
             try{
                 JSONObject jsonObject =  jsonArray.getJSONObject(0);
 
-                if(jsonObject.getBoolean("status")){
+                if(jsonObject.getBoolean("status")) {
                     JSONArray songs = jsonObject.getJSONArray("songs");
 
-                    int j = 0;
-
-                    for(int i = 0; i < songs.length(); i++){
+                    for (int i = 0; i < songs.length(); i++) {
                         JSONArray song = songs.getJSONArray(i);
 
                         int songId = 0;
-                        String songTitle = " ";
-                        String movieName = " ";
-                        String movieSinger = " ";
-                        String year = " ";
-                        String duration = " ";
+                        String songTitle = "";
+                        String movieName = "";
+                        String movieSinger = "";
+                        String year = "";
+                        String duration = "";
 
                         try {
-                            if(!song.getString(0).equals("")) songId = song.getInt(0);
-                            if(!song.getString(1).equals("")) songTitle = song.getString(1);
-                            if(!song.getString(2).equals("")) movieName = song.getString(2);
-                            if(!song.getString(3).equals("")) movieSinger = song.getString(3);
-                            if(!song.getString(4).equals("")) year = song.getString(4);
-                            if(!song.getString(5).equals("")) duration = song.getString(5);
+                            if (!song.getString(0).equals("")) songId = song.getInt(0);
+                            if (!song.getString(1).equals("")) songTitle = song.getString(1);
+                            if (!song.getString(2).equals("")) movieName = song.getString(2);
+                            if (!song.getString(3).equals("")) movieSinger = song.getString(3);
+                            if (!song.getString(4).equals("")) year = song.getString(4);
+                            if (!song.getString(5).equals("")) duration = song.getString(5);
 
                             SongItems item = new SongItems();
 
@@ -196,32 +241,60 @@ public class SongsFragment extends Fragment {
                             item.setYear(year);
                             item.setDuration(duration);
 
-                            if (j == 0) j = 1;
-                            else j = 0;
-
                             songsList.add(item);
 
-                        }catch (Exception e){
+                        } catch (Exception e) {
                             e.printStackTrace();
                         }
 
                     }
 
-                    songsRecyclerView.setHasFixedSize(true);
-                    LinearLayoutManager linearLayoutManager = new LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false);
-                    songAdapter = new SongAdapter(songsList);
-                    songsRecyclerView.setLayoutManager(linearLayoutManager);
-                    songsRecyclerView.setAdapter(null);
-                    songsRecyclerView.setAdapter(songAdapter);
+                    populateSongs();
+
+                }else if(isScrolling){
+                    Toast.makeText(context, "No More Data", Toast.LENGTH_SHORT).show();
+                    isSongsAvailable = false;
                 }else if(isSearching){
                     Toast.makeText(context, "No Match Found", Toast.LENGTH_SHORT).show();
-                }else {
-                    Toast.makeText(context, "No Data", Toast.LENGTH_SHORT).show();
+                    isSongsAvailable = false;
+                    populateSongs();
                 }
 
             }catch(JSONException e){
                 e.printStackTrace();
             }
+        }
+
+        public void populateSongs(){
+            songsRecyclerView.setHasFixedSize(true);
+            LinearLayoutManager linearLayoutManager = new LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false);
+            linearLayoutManager.scrollToPosition(index);
+            songAdapter = new SongAdapter(new ArrayList<>(songsList));
+            songsRecyclerView.setLayoutManager(linearLayoutManager);
+            songsRecyclerView.setAdapter(null);
+            songsRecyclerView.setAdapter(songAdapter);
+
+            songAdapter.setOnItemClickListener(position -> {
+                CommonUtils.fromNotification = false;
+                MusicPlayerFragment.stopPlayer(MusicPlayerFragment.musicPlayerIntent);
+
+                CommonUtils.songId = songAdapter.getData().get(position).getSongId();
+
+                SongQueueItems item = new SongQueueItems();
+                item.setSongId(CommonUtils.songId);
+
+                if (!CommonUtils.isPresent(item))
+                    CommonUtils.songQueue.add(item);
+
+                ((MainActivity) context).getSupportFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+                ((MainActivity) context).getSupportFragmentManager()
+                        .beginTransaction()
+                        .addToBackStack("musicPlayerFragment")
+                        .replace(R.id.fragment_container, new MusicPlayerFragment(), "musicPlayerFragment")
+                        .commit();
+
+                MainActivity.navigationView.setCheckedItem(R.id.nav_music_player);
+            });
         }
     }
 

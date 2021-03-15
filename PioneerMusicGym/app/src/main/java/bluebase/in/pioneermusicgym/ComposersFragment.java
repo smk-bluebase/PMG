@@ -28,18 +28,20 @@ public class ComposersFragment extends Fragment {
     public static ArrayList<ComposerItems> composerList;
     public static ComposerAdapter composerAdapter;
 
-    public static String urlGetComposers = CommonUtils.IP + "/PMG/pmg_android/search/getComposers.php";
-    public static String urlSearchComposers = CommonUtils.IP + "/PMG/pmg_android/search/searchComposers.php";
+    public static String urlGetComposers = CommonUtils.IP + "/pmg_android/search/getComposers.php";
+    public static String urlSearchComposers = CommonUtils.IP + "/pmg_android/search/searchComposers.php";
 
     public static JsonObject jsonObject;
 
-    public static int lowerLimit;
-    public static int upperLimit;
-    public static int searchLowerLimit;
-    public static int searchUpperLimit;
+    public static int composerIndex;
+    public static int searchComposerIndex;
 
     public static boolean isSearching = false;
     public static String searchQuery = "";
+    public static boolean isScrolling = false;
+    public static boolean isComposerAvailable = true;
+
+    public static boolean isLoaded = false;
 
     @Nullable
     @Override
@@ -57,96 +59,114 @@ public class ComposersFragment extends Fragment {
 
         context = getContext();
 
-        composerRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
-                super.onScrollStateChanged(recyclerView, newState);
+        isLoaded = true;
 
-                if(!recyclerView.canScrollVertically(1)){
-                    if(isSearching){
-                        searchLowerLimit = searchUpperLimit;
-                        searchUpperLimit = searchUpperLimit + CommonUtils.queryLimit;
+        if(CommonUtils.isHomeSearching) ArtistsFragment.onLoaded(1);
+    }
 
-                        getComposers(searchQuery, searchLowerLimit, searchUpperLimit, urlSearchComposers);
-                    }else{
-                        lowerLimit = upperLimit;
-                        upperLimit = upperLimit + CommonUtils.queryLimit;
+    public static void onOpen(){
+        if(isLoaded) {
+            LibraryFragment.searchView.setQuery("", false);
 
-                        getComposers("", lowerLimit, upperLimit, urlGetComposers);
+            composerRecyclerView.clearOnScrollListeners();
+
+            composerRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+                @Override
+                public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                    super.onScrollStateChanged(recyclerView, newState);
+
+                    if (!recyclerView.canScrollVertically(1) && isComposerAvailable) {
+                        if (isSearching) {
+                            searchComposerIndex = searchComposerIndex + CommonUtils.queryLimit;
+                            getComposers(searchQuery, searchComposerIndex, CommonUtils.queryLimit, urlSearchComposers);
+                        } else {
+                            composerIndex = composerIndex + CommonUtils.queryLimit;
+                            getComposers("", composerIndex, CommonUtils.queryLimit, urlGetComposers);
+                        }
+
+                        isScrolling = true;
                     }
                 }
-            }
-        });
+            });
 
-        composerList = new ArrayList<>();
+            composerIndex = 0;
+            searchComposerIndex = 0;
 
-        lowerLimit = 0;
-        upperLimit = CommonUtils.queryLimit;
+            isSearching = false;
+            searchQuery = "";
+            isScrolling = false;
+            isComposerAvailable = true;
 
-        getComposers("", lowerLimit, upperLimit, urlGetComposers);
+            composerList = new ArrayList<>();
 
+            getComposers("", composerIndex, CommonUtils.queryLimit, urlGetComposers);
+        }
     }
 
     public static void onQuerySubmit(String query){
         composerList = new ArrayList<>();
+        isComposerAvailable = true;
 
         if(!query.equals("")) {
             isSearching = true;
             searchQuery = query;
+            isScrolling = false;
 
-            searchLowerLimit = 0;
-            searchUpperLimit = CommonUtils.queryLimit;
+            searchComposerIndex = 0;
 
-            getComposers(searchQuery, searchLowerLimit, searchUpperLimit, urlSearchComposers);
+            getComposers(searchQuery, searchComposerIndex, CommonUtils.queryLimit, urlSearchComposers);
         }else {
             isSearching = false;
             searchQuery = "";
+            isScrolling = true;
 
-            lowerLimit = 0;
-            upperLimit = CommonUtils.queryLimit;
+            composerIndex = 0;
 
-            getComposers(searchQuery, lowerLimit, upperLimit, urlGetComposers);
+            getComposers(searchQuery, composerIndex, CommonUtils.queryLimit, urlGetComposers);
         }
     }
 
     public static void onQueryChange(String newText){
         composerList = new ArrayList<>();
+        isComposerAvailable = true;
 
         if(!newText.equals("")) {
             isSearching = true;
             searchQuery = newText;
+            isScrolling = false;
 
-            searchLowerLimit = 0;
-            searchUpperLimit = CommonUtils.queryLimit;
+            searchComposerIndex = 0;
 
-            getComposers(searchQuery, searchLowerLimit, searchUpperLimit, urlSearchComposers);
+            getComposers(searchQuery, searchComposerIndex, CommonUtils.queryLimit, urlSearchComposers);
         }else {
             isSearching = false;
             searchQuery = "";
+            isScrolling = true;
 
-            lowerLimit = 0;
-            upperLimit = CommonUtils.queryLimit;
+            composerIndex = 0;
 
-            getComposers(searchQuery, lowerLimit, upperLimit, urlGetComposers);
+            getComposers(searchQuery, composerIndex, CommonUtils.queryLimit, urlGetComposers);
         }
     }
 
-    public static void getComposers(String searchQuery, int lowerLimit, int upperLimit, String url){
+    public static void getComposers(String searchQuery, int index, int limit, String url){
         jsonObject = new JsonObject();
         jsonObject.addProperty("composerName", searchQuery);
-        jsonObject.addProperty("lowerLimit", lowerLimit);
-        jsonObject.addProperty("upperLimit", upperLimit);
+        jsonObject.addProperty("index", index);
+        jsonObject.addProperty("limit", limit);
 
-        PostComposers postComposers = new PostComposers(context, url);
+        PostComposers postComposers = new PostComposers(context, url, index);
         postComposers.checkServerAvailability(2);
     }
 
     public static class PostComposers extends PostRequest{
         String url;
+        int index;
 
-        public PostComposers(Context context, String url){
+        public PostComposers(Context context, String url, int index){
             super(context);
             this.url = url;
+            this.index = index;
         }
 
         @Override
@@ -160,6 +180,8 @@ public class ComposersFragment extends Fragment {
 
         @Override
         public void onFinish(JSONArray jsonArray){
+            if(index == 0) composerList = new ArrayList<>();
+
             try{
                 JSONObject jsonObject =  jsonArray.getJSONObject(0);
 
@@ -195,21 +217,36 @@ public class ComposersFragment extends Fragment {
 
                     }
 
-                    composerRecyclerView.setHasFixedSize(true);
-                    LinearLayoutManager linearLayoutManager = new LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false);
-                    composerAdapter = new ComposerAdapter(composerList);
-                    composerRecyclerView.setLayoutManager(linearLayoutManager);
-                    composerRecyclerView.setAdapter(null);
-                    composerRecyclerView.setAdapter(composerAdapter);
+                    populateComposers();
+
+                }else if(isScrolling){
+                    Toast.makeText(context, "No More Data", Toast.LENGTH_SHORT).show();
+                    isComposerAvailable = false;
                 }else if(isSearching){
                     Toast.makeText(context, "No Match Found", Toast.LENGTH_SHORT).show();
-                }else {
-                    Toast.makeText(context, "No Data", Toast.LENGTH_SHORT).show();
+                    isComposerAvailable = false;
+                    populateComposers();
                 }
 
             }catch(JSONException e){
                 e.printStackTrace();
             }
+        }
+
+        public void populateComposers(){
+            composerRecyclerView.setHasFixedSize(true);
+            LinearLayoutManager linearLayoutManager = new LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false);
+            linearLayoutManager.scrollToPosition(index);
+            composerAdapter = new ComposerAdapter(new ArrayList<>(composerList));
+            composerRecyclerView.setLayoutManager(linearLayoutManager);
+            composerRecyclerView.setAdapter(null);
+            composerRecyclerView.setAdapter(composerAdapter);
+
+            composerAdapter.setOnItemClickListener(position -> {
+                CommonUtils.isSearching = true;
+                LibraryFragment.viewPager1.setCurrentItem(2);
+                LibraryFragment.searchView.setQuery("ComposerId : " + composerAdapter.getData().get(position).getComposerId(), true);
+            });
         }
     }
 

@@ -126,7 +126,10 @@
         android:layout_height="51dp"
         android:layout_alignParentRight="true"
         android:layout_alignParentBottom="true"
-        android:background="@drawable/logo_website"
+        android:scaleX="2"
+        android:scaleY="2"
+        android:layout_margin="8dp"
+        android:background="@drawable/bluebase_logo"
         android:layout_alignParentEnd="true" />
 
 

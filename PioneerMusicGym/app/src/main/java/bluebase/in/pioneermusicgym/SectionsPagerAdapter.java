@@ -8,16 +8,15 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.fragment.app.FragmentStatePagerAdapter;
 
-public class SectionsPagerAdapter extends FragmentStatePagerAdapter {
-    Context context;
+public class SectionsPagerAdapter extends FragmentPagerAdapter {
     private List<Fragment> fragmentList;
     private List<String> titlesList;
 
-    public SectionsPagerAdapter(Context context,  @NonNull FragmentManager fm, List<Fragment> fragmentList, List<String> titlesList) {
+    public SectionsPagerAdapter(@NonNull FragmentManager fm, List<Fragment> fragmentList, List<String> titlesList) {
         super(fm);
-        this.context = context;
         this.fragmentList = fragmentList;
         this.titlesList = titlesList;
     }

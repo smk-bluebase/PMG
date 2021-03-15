@@ -33,7 +33,7 @@
                 android:background="@drawable/edit_text_style"
                 android:orientation="vertical"
                 android:paddingLeft="30dp"
-                android:paddingRight="15dp" >
+                android:paddingRight="15dp">
 
                 <TextView
                     android:id="@+id/profileTitle"

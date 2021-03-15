@@ -17,6 +17,15 @@ import androidx.recyclerview.widget.RecyclerView;
 public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHolder> implements Filterable {
     private ArrayList<MovieItems> movieItemsArrayList;
     private ArrayList<MovieItems> movieItemsArrayListFull;
+    private OnItemClickListener mlistener;
+
+    public interface OnItemClickListener {
+        void onItemClick(int position);
+    }
+
+    public void setOnItemClickListener(OnItemClickListener listener) {
+        mlistener = listener;
+    }
 
     public static class MovieViewHolder extends RecyclerView.ViewHolder {
         private int movieId;
@@ -25,12 +34,21 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
         private TextView numberOfSongs;
         private RelativeLayout movieItemRelativeLayout;
 
-        public MovieViewHolder (View itemView) {
+        public MovieViewHolder (View itemView, final OnItemClickListener listener) {
             super(itemView);
             movieTitle = itemView.findViewById(R.id.movieTitle);
             year = itemView.findViewById(R.id.year);
             numberOfSongs = itemView.findViewById(R.id.numberOfSongs);
             movieItemRelativeLayout = itemView.findViewById(R.id.movieItemRelativeLayout);
+
+            itemView.setOnClickListener(v -> {
+                if (listener != null) {
+                    int position = getAdapterPosition();
+                    if (position != RecyclerView.NO_POSITION) {
+                        listener.onItemClick(position);
+                    }
+                }
+            });
         }
 
     }
@@ -43,7 +61,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
     @Override
     public MovieAdapter.MovieViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.movie_item, parent, false);
-        MovieAdapter.MovieViewHolder movieViewHolder = new MovieAdapter.MovieViewHolder(v);
+        MovieAdapter.MovieViewHolder movieViewHolder = new MovieAdapter.MovieViewHolder(v, mlistener);
         return movieViewHolder;
     }
 
@@ -104,5 +122,9 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
             notifyDataSetChanged();
         }
     };
+
+    public ArrayList<MovieItems> getData() {
+        return movieItemsArrayList;
+    }
 
 }

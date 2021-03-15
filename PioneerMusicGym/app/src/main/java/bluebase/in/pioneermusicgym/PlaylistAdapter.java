@@ -9,6 +9,8 @@ import android.widget.Filterable;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import org.json.JSONException;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -21,6 +23,16 @@ import androidx.recyclerview.widget.RecyclerView;
 public class PlaylistAdapter extends RecyclerView.Adapter<PlaylistAdapter.PlaylistViewHolder> implements Filterable {
     private ArrayList<PlaylistItems> playlistItemsArrayList;
     private ArrayList<PlaylistItems> playlistItemsArrayListFull;
+    private OnItemClickListener mlistener;
+    private int selectedPosition = -1;
+
+    public interface OnItemClickListener {
+        void onItemClick(int position) throws JSONException;
+    }
+
+    public void setOnItemClickListener(OnItemClickListener listener) {
+        mlistener = listener;
+    }
 
     public static class PlaylistViewHolder extends RecyclerView.ViewHolder {
         private int playlistId;
@@ -29,12 +41,25 @@ public class PlaylistAdapter extends RecyclerView.Adapter<PlaylistAdapter.Playli
         private TextView numberOfSongs;
         private RelativeLayout playlistItemRelativeLayout;
 
-        public PlaylistViewHolder(View itemView) {
+        public PlaylistViewHolder(View itemView, final OnItemClickListener listener) {
             super(itemView);
             playlistTitle = itemView.findViewById(R.id.playlistTitle);
             createdOn = itemView.findViewById(R.id.createdOn);
             numberOfSongs = itemView.findViewById(R.id.numberOfSongs);
             playlistItemRelativeLayout = itemView.findViewById(R.id.playlistItemRelativeLayout);
+
+            itemView.setOnClickListener(v -> {
+                if (listener != null) {
+                    int position = getAdapterPosition();
+                    if (position != RecyclerView.NO_POSITION) {
+                        try {
+                            listener.onItemClick(position);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            });
         }
 
     }
@@ -47,7 +72,7 @@ public class PlaylistAdapter extends RecyclerView.Adapter<PlaylistAdapter.Playli
     @Override
     public PlaylistViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.playlist_item, parent, false);
-        PlaylistViewHolder playlistViewHolder = new PlaylistViewHolder(v);
+        PlaylistViewHolder playlistViewHolder = new PlaylistViewHolder(v, mlistener);
         return playlistViewHolder;
     }
 
@@ -57,20 +82,40 @@ public class PlaylistAdapter extends RecyclerView.Adapter<PlaylistAdapter.Playli
         holder.playlistId = currentItem.getPlaylistId();
         holder.playlistTitle.setText(currentItem.getPlaylistTitle());
 
-        try{
-            Date date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH).parse(currentItem.getCreatedOn());
-            holder.createdOn.setText(new SimpleDateFormat("dd, MMMM, yyyy", Locale.ENGLISH).format(date));
-        }catch(ParseException e){
-            e.printStackTrace();
+        if(!currentItem.getCreatedOn().equals("")) {
+            try {
+                Date date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH).parse(currentItem.getCreatedOn());
+                holder.createdOn.setText(new SimpleDateFormat("dd, MMMM, yyyy", Locale.ENGLISH).format(date));
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }else {
+            holder.createdOn.setVisibility(View.GONE);
         }
 
-        holder.numberOfSongs.setText(currentItem.getNumberOfSongs() + " Songs");
+        if(currentItem.getNumberOfSongs() != -1) {
+            if (currentItem.getNumberOfSongs() == 1) holder.numberOfSongs.setText(currentItem.getNumberOfSongs() + " Song");
+            else holder.numberOfSongs.setText(currentItem.getNumberOfSongs() + " Songs");
+        }else {
+            holder.numberOfSongs.setVisibility(View.GONE);
+        }
 
         if (position % 2 == 0) {
             holder.playlistItemRelativeLayout.setBackgroundColor(Color.parseColor("#F5F5F5"));
         }else{
             holder.playlistItemRelativeLayout.setBackgroundColor(Color.parseColor("#D3D3D3"));
         }
+
+        if(currentItem.getNumberOfSongs() == -1) {
+            if (selectedPosition == position) holder.itemView.setBackgroundColor(Color.parseColor("#C4A484"));
+
+            holder.itemView.setOnClickListener(v -> {
+                selectedPosition = position;
+                MusicPlayerUtils.playlistId = currentItem.getPlaylistId();
+                notifyDataSetChanged();
+            });
+        }
+
     }
 
     @Override
@@ -113,5 +158,13 @@ public class PlaylistAdapter extends RecyclerView.Adapter<PlaylistAdapter.Playli
             notifyDataSetChanged();
         }
     };
+
+    public ArrayList<PlaylistItems> getData() {
+        return playlistItemsArrayList;
+    }
+
+    public int getPosition(PlaylistItems item){
+        return playlistItemsArrayListFull.indexOf(item);
+    }
 
 }

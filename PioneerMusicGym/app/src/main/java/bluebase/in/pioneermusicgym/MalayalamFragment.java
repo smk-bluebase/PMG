@@ -26,22 +26,25 @@ public class MalayalamFragment extends Fragment {
 
     public static RecyclerView malayalamMovieRecyclerView;
     public static ArrayList<MovieItems> malayalamMovieList;
-    public static MovieAdapter movieAdapter;
 
-    public static String urlGetMovies = CommonUtils.IP + "/PMG/pmg_android/search/getMovies.php";
-    public static String urlSearchMovies = CommonUtils.IP + "/PMG/pmg_android/search/searchMovies.php";
+    public static String urlGetMovies = CommonUtils.IP + "/pmg_android/search/getMoviesLanguageWise.php";
+    public static String urlSearchMovies = CommonUtils.IP + "/pmg_android/search/searchMovies.php";
+    public static String urlSingerMovies = CommonUtils.IP + "/pmg_android/search/getSingerMovies.php";
+    public static String urlComposerMovies = CommonUtils.IP + "/pmg_android/search/getComposerMovies.php";
 
     public static JsonObject jsonObject;
 
-    public static int lowerLimit;
-    public static int upperLimit;
-    public static int searchLowerLimit;
-    public static int searchUpperLimit;
+    public static int malayalamIndex;
+    public static int searchMalayalamMovieIndex;
 
     public static boolean isSearching = false;
     public static String searchQuery = "";
+    public static boolean isScrolling = false;
+    public static boolean isMalayalamMoviesAvailable = true;
 
-    public static int languageId = 4;
+    public static int languageId = 3;
+
+    public static boolean isLoaded = false;
 
     @Nullable
     @Override
@@ -59,100 +62,160 @@ public class MalayalamFragment extends Fragment {
 
         context = getContext();
 
-        malayalamMovieRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
-                super.onScrollStateChanged(recyclerView, newState);
+        isLoaded = true;
+    }
 
-                if(!recyclerView.canScrollVertically(1)){
-                    if(isSearching){
-                        searchLowerLimit = searchUpperLimit;
-                        searchUpperLimit = searchUpperLimit + CommonUtils.queryLimit;
+    public static void onOpen(){
+        if(isLoaded) {
+            LibraryFragment.searchView.setQuery("", false);
 
-                        getMalayalamMovies(searchQuery, searchLowerLimit, searchUpperLimit, urlSearchMovies);
-                    }else{
-                        lowerLimit = upperLimit;
-                        upperLimit = upperLimit + CommonUtils.queryLimit;
+            malayalamMovieRecyclerView.clearOnScrollListeners();
 
-                        getMalayalamMovies("", lowerLimit, upperLimit, urlGetMovies);
+            malayalamMovieRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+                @Override
+                public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                    super.onScrollStateChanged(recyclerView, newState);
+
+                    if (!recyclerView.canScrollVertically(1) && isMalayalamMoviesAvailable) {
+                        if (isSearching) {
+                            searchMalayalamMovieIndex = searchMalayalamMovieIndex + CommonUtils.queryLimit;
+                            getMalayalamMovies(searchQuery, searchMalayalamMovieIndex, CommonUtils.queryLimit, urlSearchMovies);
+                        } else {
+                            malayalamIndex = malayalamIndex + CommonUtils.queryLimit;
+                            getMalayalamMovies("", malayalamIndex, CommonUtils.queryLimit, urlGetMovies);
+                        }
+
+                        isScrolling = true;
                     }
                 }
-            }
-        });
+            });
 
-        malayalamMovieList = new ArrayList<>();
+            malayalamIndex = 0;
+            searchMalayalamMovieIndex = 0;
 
-        lowerLimit = 0;
-        upperLimit = CommonUtils.queryLimit;
+            isSearching = false;
+            searchQuery = "";
+            isScrolling = false;
+            isMalayalamMoviesAvailable = true;
 
-        getMalayalamMovies("", lowerLimit, upperLimit, urlGetMovies);
+            malayalamMovieList = new ArrayList<>();
 
+            getMalayalamMovies("", malayalamIndex, CommonUtils.queryLimit, urlGetMovies);
+        }
     }
 
     public static void onQuerySubmit(String query){
         malayalamMovieList = new ArrayList<>();
+        isMalayalamMoviesAvailable = true;
 
         if(!query.equals("")) {
             isSearching = true;
-            searchQuery = query;
+            isScrolling = false;
 
-            searchLowerLimit = 0;
-            searchUpperLimit = CommonUtils.queryLimit;
+            searchMalayalamMovieIndex = 0;
 
-            getMalayalamMovies(searchQuery, searchLowerLimit, searchUpperLimit, urlSearchMovies);
+            if(query.startsWith("SingerId : ")){
+                CommonUtils.isSearching = true;
+                searchQuery = query.substring(11);
+                getSingerMovies(searchQuery, searchMalayalamMovieIndex, urlSingerMovies);
+            }else if(query.startsWith("ComposerId : ")) {
+                CommonUtils.isSearching = true;
+                searchQuery = query.substring(13);
+                getComposerMovies(searchQuery, searchMalayalamMovieIndex, urlComposerMovies);
+            }else {
+                CommonUtils.isSearching = false;
+                searchQuery = query;
+                getMalayalamMovies(searchQuery, searchMalayalamMovieIndex, CommonUtils.queryLimit, urlSearchMovies);
+            }
+
         }else {
             isSearching = false;
             searchQuery = "";
+            isScrolling = true;
+            CommonUtils.isSearching = false;
 
-            lowerLimit = 0;
-            upperLimit = CommonUtils.queryLimit;
+            malayalamIndex = 0;
 
-            getMalayalamMovies(searchQuery, lowerLimit, upperLimit, urlGetMovies);
+            getMalayalamMovies(searchQuery, malayalamIndex, CommonUtils.queryLimit, urlGetMovies);
         }
     }
 
     public static void onQueryChange(String newText){
         malayalamMovieList = new ArrayList<>();
+        isMalayalamMoviesAvailable = true;
 
         if(!newText.equals("")) {
             isSearching = true;
-            searchQuery = newText;
+            isScrolling = false;
 
-            searchLowerLimit = 0;
-            searchUpperLimit = CommonUtils.queryLimit;
+            searchMalayalamMovieIndex = 0;
 
-            getMalayalamMovies(searchQuery, searchLowerLimit, searchUpperLimit, urlSearchMovies);
+            if(newText.startsWith("SingerId : ")){
+                CommonUtils.isSearching = true;
+                searchQuery = newText.substring(11);
+                getSingerMovies(searchQuery, searchMalayalamMovieIndex, urlSingerMovies);
+            }else if(newText.startsWith("ComposerId : ")) {
+                CommonUtils.isSearching = true;
+                searchQuery = newText.substring(13);
+                getComposerMovies(searchQuery, searchMalayalamMovieIndex, urlComposerMovies);
+            }else {
+                CommonUtils.isSearching = false;
+                searchQuery = newText;
+                getMalayalamMovies(searchQuery, searchMalayalamMovieIndex, CommonUtils.queryLimit, urlSearchMovies);
+            }
+
         }else {
             isSearching = false;
             searchQuery = "";
+            isScrolling = true;
+            CommonUtils.isSearching = false;
 
-            lowerLimit = 0;
-            upperLimit = CommonUtils.queryLimit;
+            malayalamIndex = 0;
 
-            getMalayalamMovies(searchQuery, lowerLimit, upperLimit, urlGetMovies);
+            getMalayalamMovies(searchQuery, malayalamIndex, CommonUtils.queryLimit, urlGetMovies);
         }
     }
 
-    public static void getMalayalamMovies(String searchQuery, int lowerLimit, int upperLimit, String url){
+    public static void getMalayalamMovies(String searchQuery, int index, int limit, String url){
         jsonObject = new JsonObject();
         jsonObject.addProperty("languageId", languageId);
 
         if(!searchQuery.equals(""))
             jsonObject.addProperty("movieName", searchQuery);
 
-        jsonObject.addProperty("lowerLimit", lowerLimit);
-        jsonObject.addProperty("upperLimit", upperLimit);
+        jsonObject.addProperty("index", index);
+        jsonObject.addProperty("limit", limit);
 
-        PostMalayalamMovies postMalayalamMovies = new PostMalayalamMovies(context, url);
+        PostMalayalamMovies postMalayalamMovies = new PostMalayalamMovies(context, url, index);
+        postMalayalamMovies.checkServerAvailability(2);
+    }
+
+    public static void getSingerMovies(String searchQuery, int index, String url){
+        jsonObject = new JsonObject();
+        jsonObject.addProperty("singerId", searchQuery);
+        jsonObject.addProperty("languageId", languageId);
+
+        PostMalayalamMovies postMalayalamMovies = new PostMalayalamMovies(context, url, index);
+        postMalayalamMovies.checkServerAvailability(2);
+    }
+
+    public static void getComposerMovies(String searchQuery, int index, String url){
+        jsonObject = new JsonObject();
+        jsonObject.addProperty("composerId", searchQuery);
+        jsonObject.addProperty("languageId", languageId);
+
+        PostMalayalamMovies postMalayalamMovies = new PostMalayalamMovies(context, url, index);
         postMalayalamMovies.checkServerAvailability(2);
     }
 
     public static class PostMalayalamMovies extends PostRequest{
         String url;
+        int index;
 
-        public PostMalayalamMovies(Context context, String url){
+        public PostMalayalamMovies(Context context, String url, int index){
             super(context);
             this.url = url;
+            this.index = index;
         }
 
         @Override
@@ -166,6 +229,8 @@ public class MalayalamFragment extends Fragment {
 
         @Override
         public void onFinish(JSONArray jsonArray){
+            if(index == 0) malayalamMovieList = new ArrayList<>();
+
             try{
                 JSONObject jsonObject =  jsonArray.getJSONObject(0);
 
@@ -201,21 +266,36 @@ public class MalayalamFragment extends Fragment {
 
                     }
 
-                    malayalamMovieRecyclerView.setHasFixedSize(true);
-                    LinearLayoutManager linearLayoutManager = new LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false);
-                    movieAdapter = new MovieAdapter(malayalamMovieList);
-                    malayalamMovieRecyclerView.setLayoutManager(linearLayoutManager);
-                    malayalamMovieRecyclerView.setAdapter(null);
-                    malayalamMovieRecyclerView.setAdapter(movieAdapter);
+                    populateMalayalamMovies();
+
+                }else if(isScrolling){
+                    Toast.makeText(context, "No More Data", Toast.LENGTH_SHORT).show();
+                    isMalayalamMoviesAvailable = false;
                 }else if(isSearching){
                     Toast.makeText(context, "No Match Found", Toast.LENGTH_SHORT).show();
-                }else {
-                    Toast.makeText(context, "No Data", Toast.LENGTH_SHORT).show();
+                    isMalayalamMoviesAvailable = false;
+                    populateMalayalamMovies();
                 }
 
             }catch(JSONException e){
                 e.printStackTrace();
             }
+        }
+
+        public void populateMalayalamMovies(){
+            malayalamMovieRecyclerView.setHasFixedSize(true);
+            LinearLayoutManager linearLayoutManager = new LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false);
+            linearLayoutManager.scrollToPosition(index);
+            MovieAdapter malayalamMovieAdapter = new MovieAdapter(new ArrayList<>(malayalamMovieList));
+            malayalamMovieRecyclerView.setLayoutManager(linearLayoutManager);
+            malayalamMovieRecyclerView.setAdapter(null);
+            malayalamMovieRecyclerView.setAdapter(malayalamMovieAdapter);
+
+            malayalamMovieAdapter.setOnItemClickListener(position -> {
+                CommonUtils.isSearching = false;
+                LibraryFragment.viewPager1.setCurrentItem(0);
+                LibraryFragment.searchView.setQuery("MovieId : " + malayalamMovieAdapter.getData().get(position).getMovieId(), true);
+            });
         }
     }
 

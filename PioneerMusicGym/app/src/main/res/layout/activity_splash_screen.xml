@@ -4,13 +4,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#cf7f4d"
+    android:background="@color/gainsBoro"
     tools:context=".SplashScreen">
 
     <ImageView
         android:id="@+id/splashScreenImage"
-        android:layout_width="186dp"
-        android:layout_height="265dp"
+        android:layout_width="232dp"
+        android:layout_height="331dp"
         android:layout_centerInParent="true"
         android:background="@drawable/splash_screen" />
 

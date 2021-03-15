@@ -12,6 +12,7 @@ import android.text.TextWatcher;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -32,8 +33,8 @@ public class LoginActivity extends AppCompatActivity {
     EditText userNameEditText1;
     EditText passwordEditText;
 
-    String urlLogin = CommonUtils.IP + "/PMG/pmg_android/login/login.php";
-    String urlForgotPassword = CommonUtils.IP + "/PMG/pmg_android/login/forgotPasswordGenerator.php";
+    String urlLogin = CommonUtils.IP + "/pmg_android/login/login.php";
+    String urlForgotPassword = CommonUtils.IP + "/pmg_android/login/forgotPasswordGenerator.php";
 
     ProgressDialog progressDialog;
     Dialog dialog;
@@ -44,6 +45,11 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+        WindowManager.LayoutParams params = getWindow().getAttributes();
+        params.flags |= WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON;
+        params.screenBrightness = 1;
+        getWindow().setAttributes(params);
 
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);

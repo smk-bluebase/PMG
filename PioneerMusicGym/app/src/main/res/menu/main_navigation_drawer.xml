@@ -32,31 +32,49 @@
 
     </group>
 
-        <item android:title="User Settings">
+    <item android:title="User Settings">
 
-            <menu>
+        <menu>
 
-                <group android:checkableBehavior="single">
+            <group android:checkableBehavior="single">
 
-                    <item
-                        android:id="@+id/nav_profile"
-                        android:icon="@drawable/profile"
-                        android:title="Profile" />
+                <item
+                    android:id="@+id/nav_profile"
+                    android:icon="@drawable/profile"
+                    android:title="Profile" />
 
-                    <item
-                        android:id="@+id/nav_change_password"
-                        android:icon="@drawable/change_password"
-                        android:title="Change Password" />
+                <item
+                    android:id="@+id/nav_change_password"
+                    android:icon="@drawable/change_password"
+                    android:title="Change Password" />
 
-                    <item
-                        android:id="@+id/nav_settings"
-                        android:icon="@drawable/settings"
-                        android:title="Settings" />
+                <item
+                    android:id="@+id/nav_settings"
+                    android:icon="@drawable/settings"
+                    android:title="Settings" />
 
-                </group>
+            </group>
 
-            </menu>
+        </menu>
 
-        </item>
+    </item>
+
+    <item android:title="Rate and Share">
+
+        <menu>
+
+            <item
+                android:id="@+id/nav_rate"
+                android:icon="@drawable/rate"
+                android:title="Rate App" />
+
+            <item
+                android:id="@+id/nav_share"
+                android:icon="@drawable/share"
+                android:title="Share App" />
+
+        </menu>
+
+    </item>
 
 </menu>

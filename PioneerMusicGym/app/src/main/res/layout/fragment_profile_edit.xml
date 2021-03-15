@@ -189,19 +189,19 @@
                     android:layout_marginTop="20dp" />
 
                 <CheckBox
-                    android:id="@+id/englishCheckBox"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="English"
-                    android:layout_below="@id/languagesKnown"
-                    android:layout_marginTop="10dp" />
-
-                <CheckBox
                     android:id="@+id/tamilCheckBox"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Tamil"
-                    android:layout_toRightOf="@id/englishCheckBox"
+                    android:layout_below="@id/languagesKnown"
+                    android:layout_marginTop="10dp" />
+
+                <CheckBox
+                    android:id="@+id/malayalamCheckBox"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Malayalam"
+                    android:layout_toRightOf="@id/tamilCheckBox"
                     android:layout_below="@id/languagesKnown"
                     android:layout_marginTop="10dp"
                     android:layout_marginLeft="20dp" />
@@ -211,7 +211,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Hindi"
-                    android:layout_toRightOf="@id/tamilCheckBox"
+                    android:layout_toRightOf="@id/malayalamCheckBox"
                     android:layout_below="@id/languagesKnown"
                     android:layout_marginTop="10dp"
                     android:layout_marginLeft="20dp"/>
