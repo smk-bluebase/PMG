@@ -17,12 +17,15 @@ import androidx.fragment.app.Fragment;
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
-public class MoviesFragment extends Fragment {
-    Context context;
 
-    ViewPager viewPager3;
+public class MoviesFragment extends Fragment {
+    public static ViewPager viewPager3;
     PagerAdapter pagerAdapter3;
-    TabLayout collectionsTabLayout;
+    TabLayout moviesTabLayout;
+
+    public static boolean isLoaded = false;
+
+    public static Context context;
 
     @Nullable
     @Override
@@ -39,39 +42,35 @@ public class MoviesFragment extends Fragment {
         titlesList.add("MALAYALAM");
         titlesList.add("HINDI");
 
+        moviesTabLayout = view.findViewById(R.id.moviesTabLayout);
         viewPager3 = view.findViewById(R.id.moviesViewPager);
-        pagerAdapter3 = new SectionsPagerAdapter(context, getFragmentManager(), fragmentList, titlesList);
-        collectionsTabLayout = view.findViewById(R.id.moviesTabLayout);
 
-        return view;
-    }
+        pagerAdapter3 = new SectionsPagerAdapter(getChildFragmentManager(), fragmentList, titlesList);
 
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-
-        context = getContext();
-
+        viewPager3.setOffscreenPageLimit(3);
         viewPager3.setAdapter(pagerAdapter3);
-        collectionsTabLayout.setupWithViewPager(viewPager3);
+        moviesTabLayout.setupWithViewPager(viewPager3);
 
-        collectionsTabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+        moviesTabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
                 switch(tab.getPosition()){
                     case 0:
                         CommonUtils.openTab = 4;
-                        LibraryFragment.searchView.setQuery("", false);
+                        if(!CommonUtils.isSearching) TamilFragment.onOpen();
+                        else LibraryFragment.searchView.setQuery(LibraryFragment.searchView.getQuery(), true);
                         break;
 
                     case 1:
                         CommonUtils.openTab = 5;
-                        LibraryFragment.searchView.setQuery("", false);
+                        if(!CommonUtils.isSearching) MalayalamFragment.onOpen();
+                        else LibraryFragment.searchView.setQuery(LibraryFragment.searchView.getQuery(), true);
                         break;
 
                     case 2:
                         CommonUtils.openTab = 6;
-                        LibraryFragment.searchView.setQuery("", false);
+                        if(!CommonUtils.isSearching) HindiFragment.onOpen();
+                        else LibraryFragment.searchView.setQuery(LibraryFragment.searchView.getQuery(), true);
                         break;
 
                     default:
@@ -90,6 +89,37 @@ public class MoviesFragment extends Fragment {
             }
         });
 
+        return view;
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        context = getContext();
+
+        isLoaded = true;
+    }
+
+    public static void onOpen(){
+        if(isLoaded) {
+            CommonUtils.startDatabaseHelper(context);
+            MoviesFragment.viewPager3.setCurrentItem(CommonUtils.dataBaseHelper.getLanguageCode());
+            switch(CommonUtils.dataBaseHelper.getLanguageCode()){
+                case 0:
+                    TamilFragment.onOpen();
+                    break;
+                case 1:
+                    MalayalamFragment.onOpen();
+                    break;
+                case 2:
+                    HindiFragment.onOpen();
+                    break;
+                default:
+                    TamilFragment.onOpen();
+            }
+            CommonUtils.closeDataBaseHelper();
+        }
     }
 
 }

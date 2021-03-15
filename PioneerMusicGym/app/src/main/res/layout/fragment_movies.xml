@@ -15,7 +15,7 @@
             android:layout_height="55dp"
             android:background="@color/lightLightGrey" />
 
-        <androidx.viewpager.widget.ViewPager
+        <bluebase.in.pioneermusicgym.NonSwipeableViewPager
             android:id="@+id/moviesViewPager"
             android:layout_width="match_parent"
             android:layout_height="match_parent"

@@ -1,6 +1,5 @@
 package bluebase.in.pioneermusicgym;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,12 +16,11 @@ import androidx.fragment.app.Fragment;
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
-public class ArtistsFragment extends Fragment {
-    Context context;
 
-    ViewPager viewPager2;
+public class ArtistsFragment extends Fragment {
+    public static ViewPager viewPager2;
     PagerAdapter pagerAdapter2;
-    TabLayout artistsTabLayout;
+    public static TabLayout artistsTabLayout;
 
     @Nullable
     @Override
@@ -37,19 +35,12 @@ public class ArtistsFragment extends Fragment {
         titlesList.add("SINGERS");
         titlesList.add("COMPOSERS");
 
-        viewPager2 = view.findViewById(R.id.artistsViewPager);
-        pagerAdapter2 = new SectionsPagerAdapter(context, getFragmentManager(),fragmentList, titlesList);
         artistsTabLayout = view.findViewById(R.id.artistsTabLayout);
+        viewPager2 = view.findViewById(R.id.artistsViewPager);
 
-        return view;
-    }
+        pagerAdapter2 = new SectionsPagerAdapter(getChildFragmentManager(), fragmentList, titlesList);
 
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-
-        context = getContext();
-
+        viewPager2.setOffscreenPageLimit(2);
         viewPager2.setAdapter(pagerAdapter2);
         artistsTabLayout.setupWithViewPager(viewPager2);
 
@@ -59,12 +50,12 @@ public class ArtistsFragment extends Fragment {
                 switch(tab.getPosition()){
                     case 0:
                         CommonUtils.openTab = 2;
-                        LibraryFragment.searchView.setQuery("", false);
+                        SingersFragment.onOpen();
                         break;
 
                     case 1:
                         CommonUtils.openTab = 3;
-                        LibraryFragment.searchView.setQuery("", false);
+                        ComposersFragment.onOpen();
                         break;
 
                     default:
@@ -83,6 +74,23 @@ public class ArtistsFragment extends Fragment {
             }
         });
 
+        return view;
+    }
+
+    public static void onLoaded(int id){
+        if(id == 0){
+            if(CommonUtils.searchQuery.contains("SingerName : ")) {
+                LibraryFragment.searchView.setQuery(CommonUtils.searchQuery.substring(13), false);
+                CommonUtils.isHomeSearching = false;
+            }else if(CommonUtils.searchQuery.contains("ComposerName : ")){
+                artistsTabLayout.getTabAt(1).select();
+            }
+        }else if(id == 1){
+            if(CommonUtils.searchQuery.contains("ComposerName : ")) {
+                LibraryFragment.searchView.setQuery(CommonUtils.searchQuery.substring(15), false);
+                CommonUtils.isHomeSearching = false;
+            }
+        }
     }
 
 }

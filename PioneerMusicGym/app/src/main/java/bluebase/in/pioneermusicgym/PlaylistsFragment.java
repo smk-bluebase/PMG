@@ -4,7 +4,9 @@ import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.app.SearchManager;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.TypedArray;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
@@ -23,21 +25,26 @@ import android.widget.SearchView;
 import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.gson.JsonObject;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.lang.reflect.Array;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.view.MenuItemCompat;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -45,19 +52,16 @@ public class PlaylistsFragment extends Fragment {
     Context context;
 
     RecyclerView playlistsRecyclerView;
-    ArrayList<PlaylistItems> playlistsList = new ArrayList<>();
+    ArrayList<PlaylistItems> playlistsList;
     PlaylistAdapter playlistAdapter;
-
-    String urlGetPlaylists = CommonUtils.IP + "/PMG/pmg_android/search/getPlaylists.php";
-
-    ProgressDialog progressDialog;
-    JsonObject jsonObject;
-
-    int lowerLimit;
-    int upperLimit;
 
     Dialog dialog;
     FloatingActionButton addPlaylist;
+
+    RelativeLayout playlistRelativeLayout;
+
+    boolean isSearch = false;
+    String queryString = "";
 
 
     @Nullable
@@ -75,6 +79,8 @@ public class PlaylistsFragment extends Fragment {
         layoutParams.setMargins(0, 0, 200, height);
         background.setLayoutParams(layoutParams);
 
+        playlistRelativeLayout = view.findViewById(R.id.playlistRelativeLayout);
+
         playlistsRecyclerView = view.findViewById(R.id.playlistsRecyclerView);
 
         addPlaylist = view.findViewById(R.id.addPlaylistButton);
@@ -89,28 +95,29 @@ public class PlaylistsFragment extends Fragment {
 
             submit.setOnClickListener(v1 -> {
                 CommonUtils.startDatabaseHelper(context);
+
                 if(newPlaylistName.getText().toString().length() > 0) {
-                    int playlistId = CommonUtils.dataBaseHelper.playlistLocalMaxId();
-                    String playlistTitle = " ";
-                    int numberOfSongs = 0;
-                    String createdOn = " ";
-                    int isLocal = 1;
+                    if(CommonUtils.dataBaseHelper.ifPlaylistNameExists(newPlaylistName.getText().toString())) {
+                        String playlistTitle = " ";
+                        String createdOn = " ";
 
-                    try {
-                        playlistTitle = newPlaylistName.getText().toString();
+                        try {
+                            playlistTitle = newPlaylistName.getText().toString();
 
-                        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                        Date date = new Date();
-                        createdOn = dateFormat.format(date);
+                            DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                            Date date = new Date();
+                            createdOn = dateFormat.format(date);
 
-                        CommonUtils.dataBaseHelper.insertPlaylists(playlistId, playlistTitle, numberOfSongs, createdOn, isLocal);
-                    }catch (Exception e){
-                        e.printStackTrace();
+                            CommonUtils.dataBaseHelper.insertPlaylists(playlistTitle, createdOn);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+                        dialog.dismiss();
+                        populatePlaylists();
+                    }else {
+                        Toast.makeText(context, "Playlist Name Exists", Toast.LENGTH_SHORT).show();
                     }
-
-                    dialog.dismiss();
-                    populatePlaylists();
-
                 }else{
                     Toast.makeText(context, "Enter new Playlist Name", Toast.LENGTH_SHORT).show();
                 }
@@ -133,20 +140,11 @@ public class PlaylistsFragment extends Fragment {
 
         context = getContext();
 
-        lowerLimit = 0;
-        upperLimit = 30;
+        playlistsList = new ArrayList<>();
 
-        progressDialog = new ProgressDialog(context);
-        progressDialog.setCancelable(false);
-        progressDialog.setMessage("Loading...");
-        progressDialog.show();
+        populatePlaylists();
 
-        jsonObject = new JsonObject();
-        jsonObject.addProperty("lowerLimit", lowerLimit);
-        jsonObject.addProperty("upperLimit", upperLimit);
-
-        PostPlaylists postPlaylists = new PostPlaylists(context);
-        postPlaylists.checkServerAvailability(2);
+        enableSwipeToDeleteAndUndo();
     }
 
     @Override
@@ -164,6 +162,9 @@ public class PlaylistsFragment extends Fragment {
             @Override
             public boolean onQueryTextSubmit(String query) {
                 searchView.clearFocus();
+
+                isSearch = true;
+                queryString = query;
 
                 boolean contains = false;
                 for (PlaylistItems item : playlistsList){
@@ -184,6 +185,8 @@ public class PlaylistsFragment extends Fragment {
 
             @Override
             public boolean onQueryTextChange(String newText) {
+                isSearch = true;
+                queryString = newText;
                 playlistAdapter.getFilter().filter(newText);
                 return false;
             }
@@ -198,6 +201,8 @@ public class PlaylistsFragment extends Fragment {
             @Override
             public boolean onMenuItemActionCollapse(MenuItem item) {
                 playlistAdapter.getFilter().filter("");
+                isSearch = false;
+                queryString = "";
                 return true;
             }
         });
@@ -211,20 +216,17 @@ public class PlaylistsFragment extends Fragment {
 
         JSONArray jsonArray = CommonUtils.dataBaseHelper.selectPlaylists();
 
-        int j = 0;
-
         for(int i = 0; i < jsonArray.length(); i++){
             try{
                 JSONObject jsonObject = jsonArray.getJSONObject(i);
 
+                int count = CommonUtils.dataBaseHelper.selectPlaylistSongsCount(jsonObject.getInt("playlistId"));
+
                 PlaylistItems item = new PlaylistItems();
                 item.setPlaylistId(jsonObject.getInt("playlistId"));
                 item.setPlaylistTitle(jsonObject.getString("playlistTitle"));
-                item.setNumberOfSongs(jsonObject.getString("numberOfSongs"));
+                item.setNumberOfSongs(count);
                 item.setCreatedOn(jsonObject.getString("createdOn"));
-
-                if (j == 0) j = 1;
-                else j = 0;
 
                 playlistsList.add(item);
 
@@ -237,73 +239,100 @@ public class PlaylistsFragment extends Fragment {
 
         playlistsRecyclerView.setHasFixedSize(true);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false);
-        playlistAdapter = new PlaylistAdapter(playlistsList);
+        playlistAdapter = new PlaylistAdapter(new ArrayList<>(playlistsList));
         playlistsRecyclerView.setLayoutManager(linearLayoutManager);
         playlistsRecyclerView.setAdapter(null);
         playlistsRecyclerView.setAdapter(playlistAdapter);
+
+        playlistAdapter.setOnItemClickListener(position -> {
+            CommonUtils.startDatabaseHelper(context);
+
+            CommonUtils.playlistId = playlistAdapter.getData().get(position).getPlaylistId();
+
+            CommonUtils.songIds = CommonUtils.dataBaseHelper.selectPlaylistSongs(CommonUtils.playlistId);
+
+            CommonUtils.closeDataBaseHelper();
+
+            getActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .addToBackStack("playlistSongFragment")
+                    .replace(R.id.fragment_container, new PlaylistSongFragment(), "playlistSongFragment")
+                    .commit();
+        });
     }
 
-    private class PostPlaylists extends PostRequest{
-        public PostPlaylists(Context context){
-            super(context);
+    private void positionPlaylist(int position, int originalPosition){
+        if(isSearch){
+            playlistsRecyclerView.scrollToPosition(position);
+            playlistAdapter.getFilter().filter(queryString);
+        }else {
+            playlistsRecyclerView.getLayoutManager().scrollToPosition(originalPosition);
         }
+    }
 
-        @Override
-        public void serverAvailability(boolean isServerAvailable) {
-            if(isServerAvailable){
-                super.postRequest(urlGetPlaylists, jsonObject);
-            }else{
-                Toast.makeText(context, "Connection to the server \nnot Available", Toast.LENGTH_SHORT).show();
-                progressDialog.dismiss();
-            }
-        }
+    private void enableSwipeToDeleteAndUndo() {
+        SwipeToDeleteCallback swipeToDeleteCallback = new SwipeToDeleteCallback(context) {
+            @Override
+            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int i) {
+                int position = viewHolder.getAdapterPosition();
+                PlaylistItems item = playlistAdapter.getData().get(position);
+                int originalPosition = playlistAdapter.getPosition(item);
 
-        @Override
-        public void onFinish(JSONArray jsonArray) {
-            try{
-                JSONObject jsonObject =  jsonArray.getJSONObject(0);
+                try {
+                    CommonUtils.startDatabaseHelper(context);
+                    CommonUtils.dataBaseHelper.deleteFromPlaylists(item.getPlaylistId());
+                    CommonUtils.closeDataBaseHelper();
 
-                CommonUtils.startDatabaseHelper(context);
-                CommonUtils.dataBaseHelper.deleteFromPlaylists();
+                    populatePlaylists();
 
-                if(jsonObject.getBoolean("status")){
-                    JSONArray playlists = jsonObject.getJSONArray("playlists");
-
-                    for(int i = 0; i < playlists.length(); i++){
-                        JSONArray playlist = playlists.getJSONArray(i);
-
-                        int playlistId = 0;
-                        String playlistTitle = " ";
-                        int numberOfSongs = 0;
-                        String createdOn = " ";
-                        int isLocal = 0;
-
-                        try {
-                            playlistId = Integer.parseInt(playlist.getString(0));
-                            playlistTitle = playlist.getString(1);
-                            numberOfSongs = Integer.parseInt(playlist.getString(2));
-                            createdOn = playlist.getString(3);
-
-                            CommonUtils.dataBaseHelper.insertPlaylists(playlistId, playlistTitle, numberOfSongs, createdOn, isLocal);
-                        }catch (Exception e){
-                            e.printStackTrace();
-                        }
-
-                    }
-                }else{
-                    Toast.makeText(context, "No Data", Toast.LENGTH_SHORT).show();
+                    positionPlaylist(position - 1, originalPosition - 1);
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
 
-                CommonUtils.closeDataBaseHelper();
+                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
+                alertDialogBuilder.setCancelable(true);
+                alertDialogBuilder.setTitle("Pioneer Music Gym");
+                alertDialogBuilder.setMessage("Do you want to delete this playlist?");
+                alertDialogBuilder.setPositiveButton(android.R.string.ok,
+                        (dialog, id) -> {
+                            dialog.cancel();
 
-                populatePlaylists();
+                            CommonUtils.startDatabaseHelper(context);
+                            CommonUtils.dataBaseHelper.deleteFromPlaylistSongs(item.getPlaylistId());
+                            CommonUtils.closeDataBaseHelper();
 
-                progressDialog.dismiss();
+                        });
 
-            }catch(JSONException e){
-                e.printStackTrace();
+                alertDialogBuilder.setNegativeButton(android.R.string.cancel,
+                        (dialog, id) -> {
+                            dialog.cancel();
+
+                            try {
+                                CommonUtils.startDatabaseHelper(context);
+
+                                DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                                Date date = new Date();
+                                String createdOn = dateFormat.format(date);
+                                CommonUtils.dataBaseHelper.insertIntoPlaylists(item.getPlaylistId(), item.getPlaylistTitle(), createdOn);
+
+                                CommonUtils.closeDataBaseHelper();
+
+                                populatePlaylists();
+
+                                positionPlaylist(position - 1, originalPosition - 1);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+
+                        });
+                final AlertDialog alertDialog = alertDialogBuilder.create();
+                alertDialog.show();
             }
-        }
+        };
+
+        ItemTouchHelper itemTouchhelper = new ItemTouchHelper(swipeToDeleteCallback);
+        itemTouchhelper.attachToRecyclerView(playlistsRecyclerView);
     }
 
 }

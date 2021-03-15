@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -29,13 +30,18 @@ public class SignUpActivity extends AppCompatActivity {
     JsonObject jsonObject;
     Dialog dialog;
 
-    String urlSignUp = CommonUtils.IP + "/PMG/pmg_android/login/signup.php";
-    String urlOTPVerifier = CommonUtils.IP + "/PMG/pmg_android/login/otpVerifier.php";
+    String urlSignUp = CommonUtils.IP + "/pmg_android/login/signup.php";
+    String urlOTPVerifier = CommonUtils.IP + "/pmg_android/login/otpVerifier.php";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_up);
+
+        WindowManager.LayoutParams params = getWindow().getAttributes();
+        params.flags |= WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON;
+        params.screenBrightness = 1;
+        getWindow().setAttributes(params);
 
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
@@ -137,13 +143,13 @@ public class SignUpActivity extends AppCompatActivity {
                             PostOTP postOTP = new PostOTP(context);
                             postOTP.checkServerAvailability(2);
                         }else{
-                            Toast.makeText(context, "Enter OTP!", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(context, "Enter OTP", Toast.LENGTH_SHORT).show();
                         }
                     });
 
                     dialog.show();
                 }else {
-                    Toast.makeText(context, "SignUp not completed!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "SignUp not completed", Toast.LENGTH_SHORT).show();
                 }
 
             }catch(JSONException e){
@@ -175,11 +181,11 @@ public class SignUpActivity extends AppCompatActivity {
                 JSONObject jsonObject = (JSONObject) jsonArray.get(0);
 
                 if(jsonObject.getBoolean("status")){
-                    Toast.makeText(context, "SignUp Successful!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "SignUp Successful", Toast.LENGTH_SHORT).show();
                     Intent intent = new Intent(SignUpActivity.this, LoginActivity.class);
                     startActivity(intent);
                 }else{
-                    Toast.makeText(context, "SignUp Unsuccessful!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "SignUp Unsuccessful", Toast.LENGTH_SHORT).show();
                 }
 
             }catch(JSONException e){

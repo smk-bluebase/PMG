@@ -1,7 +1,7 @@
 package bluebase.in.pioneermusicgym;
 
 import android.content.Context;
-import android.content.res.TypedArray;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
@@ -16,6 +16,8 @@ import android.widget.RelativeLayout;
 import android.widget.SearchView;
 import android.widget.Toast;
 
+import com.google.android.material.snackbar.Snackbar;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -26,6 +28,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.view.MenuItemCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -33,8 +37,14 @@ public class FavouritesFragment extends Fragment {
     Context context;
 
     RecyclerView favouritesRecyclerView;
-    ArrayList<FavouriteItems> favouritesList = new ArrayList<>();
-    FavouriteAdapter favouriteAdapter;
+    ArrayList<SongItems> favouritesList;
+    SongAdapter favouritesAdapter;
+
+    RelativeLayout favouritesRelativeLayout;
+    GetFavouriteSongs getFavouriteSongs;
+
+    boolean isSearch = false;
+    String queryString = "";
 
     @Nullable
     @Override
@@ -51,6 +61,8 @@ public class FavouritesFragment extends Fragment {
         layoutParams.setMargins(0, 0, 200, height);
         background.setLayoutParams(layoutParams);
 
+        favouritesRelativeLayout = view.findViewById(R.id.favouritesRelativeLayout);
+
         favouritesRecyclerView = view.findViewById(R.id.favouritesRecyclerView);
 
         setHasOptionsMenu(true);
@@ -64,8 +76,16 @@ public class FavouritesFragment extends Fragment {
 
         context = getContext();
 
-        populateFavourites();
+        favouritesList = new ArrayList<>();
 
+        CommonUtils.startDatabaseHelper(context);
+
+        int songIds[] = CommonUtils.dataBaseHelper.selectFavourites();
+
+        CommonUtils.closeDataBaseHelper();
+
+        getFavouriteSongs = new GetFavouriteSongs(context, songIds);
+        getFavouriteSongs.checkServerAvailability(2);
     }
 
     @Override
@@ -84,20 +104,21 @@ public class FavouritesFragment extends Fragment {
             public boolean onQueryTextSubmit(String query) {
                 searchView.clearFocus();
 
-                if(favouriteAdapter.getItemCount() > 0) {
-                    boolean contains = false;
-                    for (FavouriteItems item : favouritesList) {
-                        if (item.getSongTitle().equals(query)) {
-                            contains = true;
-                            break;
-                        }
-                    }
+                isSearch = true;
+                queryString = query;
 
-                    if (contains) {
-                        favouriteAdapter.getFilter().filter(query);
-                    } else {
-                        Toast.makeText(context, "No Match found", Toast.LENGTH_LONG).show();
+                boolean contains = false;
+                for (SongItems item : favouritesList){
+                    if(item.getSongTitle().equals(query)){
+                        contains = true;
+                        break;
                     }
+                }
+
+                if(contains){
+                    favouritesAdapter.getFilter().filter(query);
+                }else{
+                    Toast.makeText(context, "No Match found",Toast.LENGTH_LONG).show();
                 }
 
                 return false;
@@ -105,8 +126,9 @@ public class FavouritesFragment extends Fragment {
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                if(favouriteAdapter.getItemCount() > 0)
-                    favouriteAdapter.getFilter().filter(newText);
+                isSearch = true;
+                queryString = newText;
+                favouritesAdapter.getFilter().filter(newText);
                 return false;
             }
         });
@@ -119,7 +141,9 @@ public class FavouritesFragment extends Fragment {
 
             @Override
             public boolean onMenuItemActionCollapse(MenuItem item) {
-//                favouriteAdapter.getFilter().filter("");
+                favouritesAdapter.getFilter().filter("");
+                isSearch = false;
+                queryString = "";
                 return true;
             }
         });
@@ -127,47 +151,142 @@ public class FavouritesFragment extends Fragment {
         super.onCreateOptionsMenu(menu, inflater);
     }
 
+    private class GetFavouriteSongs extends GetSongs{
+        int[] songIds;
+
+        public GetFavouriteSongs(Context context, int[] songIds) {
+            super(context);
+            this.songIds = songIds;
+        }
+
+        @Override
+        public void serverAvailability(boolean isServerAvailable) {
+            if(!isServerAvailable){
+                Toast.makeText(context, "Connection to the server \nnot Available", Toast.LENGTH_SHORT).show();
+            }else {
+                getFavouriteSongs.getSongDetails(songIds);
+            }
+        }
+
+        @Override
+        public void onPostUpdate() {
+            populateFavourites();
+
+            enableSwipeToDeleteAndUndo();
+        }
+    }
+
     private void populateFavourites(){
-//        CommonUtils.startDatabaseHelper(context);
-//        favouritesList = new ArrayList<>();
-//
-//        JSONArray jsonArray = CommonUtils.dataBaseHelper.selectFavourites();
-//
-//        int j = 0;
-//
-//        for(int i = 0; i < jsonArray.length(); i++){
-//            try{
-//                JSONObject jsonObject = jsonArray.getJSONObject(i);
-//
-//                FavouriteItems item = new FavouriteItems();
-//                item.setSongId(jsonObject.getInt("songId"));
-//                item.setSongTitle(jsonObject.getString("songTitle"));
-//                item.setAlbumName(jsonObject.getString("albumName"));
-//                item.setMovieName(jsonObject.getString("movieName"));
-//                item.setAlbumSinger(jsonObject.getString("albumSinger"));
-//                item.setMovieSinger(jsonObject.getString("movieSinger"));
-//                item.setYear(jsonObject.getString("year"));
-//                item.setDuration(jsonObject.getString("duration"));
-//                item.setBackgroundColor(colors[j]);
-//
-//                if (j == 0) j = 1;
-//                else j = 0;
-//
-//                favouritesList.add(item);
-//
-//            }catch(JSONException e){
-//                e.printStackTrace();
-//            }
-//        }
-//
-//        CommonUtils.closeDataBaseHelper();
-//
-//        favouritesRecyclerView.setHasFixedSize(true);
-//        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false);
-//        favouriteAdapter = new FavouriteAdapter(favouritesList);
-//        favouritesRecyclerView.setLayoutManager(linearLayoutManager);
-//        favouritesRecyclerView.setAdapter(null);
-//        favouritesRecyclerView.setAdapter(favouriteAdapter);
+        CommonUtils.startDatabaseHelper(context);
+        favouritesList = new ArrayList<>();
+
+        JSONArray jsonArray = CommonUtils.dataBaseHelper.selectSongMaster();
+
+        for(int i = 0; i < jsonArray.length(); i++){
+            try{
+                JSONObject jsonObject = jsonArray.getJSONObject(i);
+
+                SongItems item = new SongItems();
+
+                item.setSongId(jsonObject.getInt("songId"));
+                item.setSongTitle(jsonObject.getString("title"));
+                item.setMovieName(jsonObject.getString("movieName"));
+                item.setMovieSinger(jsonObject.getString("movieSinger"));
+                item.setYear(jsonObject.getString("year"));
+                item.setDuration(jsonObject.getString("duration"));
+
+                favouritesList.add(item);
+
+            }catch(JSONException e){
+                e.printStackTrace();
+            }
+        }
+
+        CommonUtils.closeDataBaseHelper();
+
+        favouritesRecyclerView.setHasFixedSize(true);
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false);
+        favouritesAdapter = new SongAdapter(new ArrayList<>(favouritesList));
+        favouritesRecyclerView.setLayoutManager(linearLayoutManager);
+        favouritesRecyclerView.setAdapter(null);
+        favouritesRecyclerView.setAdapter(favouritesAdapter);
+
+        favouritesAdapter.setOnItemClickListener(position -> {
+            CommonUtils.fromNotification = false;
+            MusicPlayerFragment.stopPlayer(MusicPlayerFragment.musicPlayerIntent);
+
+            CommonUtils.songId = favouritesAdapter.getData().get(position).getSongId();
+
+            SongQueueItems item = new SongQueueItems();
+            item.setSongId(CommonUtils.songId);
+
+            if (!CommonUtils.isPresent(item))
+                CommonUtils.songQueue.add(item);
+
+            ((MainActivity) context).getSupportFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+            ((MainActivity) context).getSupportFragmentManager()
+                    .beginTransaction()
+                    .addToBackStack("musicPlayerFragment")
+                    .replace(R.id.fragment_container, new MusicPlayerFragment(), "musicPlayerFragment")
+                    .commit();
+
+            MainActivity.navigationView.setCheckedItem(R.id.nav_music_player);
+        });
+    }
+
+    private void positionFavourites(int position, int originalPosition){
+        if(isSearch){
+            favouritesRecyclerView.scrollToPosition(position);
+            favouritesAdapter.getFilter().filter(queryString);
+        }else {
+            favouritesRecyclerView.getLayoutManager().scrollToPosition(originalPosition - 1);
+        }
+    }
+
+    private void enableSwipeToDeleteAndUndo() {
+        SwipeToDeleteCallback swipeToDeleteCallback = new SwipeToDeleteCallback(context) {
+            @Override
+            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int i) {
+                int position = viewHolder.getAdapterPosition();
+                SongItems item = favouritesAdapter.getData().get(position);
+                int originalPosition = favouritesAdapter.getPosition(item);
+
+                try {
+                    CommonUtils.startDatabaseHelper(context);
+                    CommonUtils.dataBaseHelper.deleteFromSongMaster(item.getSongId());
+                    CommonUtils.dataBaseHelper.deleteFromFavourites(item.getSongId());
+                    CommonUtils.closeDataBaseHelper();
+
+                    populateFavourites();
+
+                    positionFavourites(position, originalPosition);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                Snackbar snackbar = Snackbar.make(favouritesRecyclerView, "Item was removed from the list.", Snackbar.LENGTH_LONG);
+                snackbar.setAction("UNDO", view -> {
+                    try {
+                        CommonUtils.startDatabaseHelper(context);
+                        CommonUtils.dataBaseHelper.insertSongMaster(item.getSongId(), item.getSongTitle(), item.getMovieName(), item.getMovieSinger(), item.getYear(), item.getDuration());
+                        CommonUtils.dataBaseHelper.insertIntoFavourites(originalPosition, item.getSongId());
+                        CommonUtils.closeDataBaseHelper();
+
+                        populateFavourites();
+
+                        positionFavourites(position, originalPosition);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                });
+
+                snackbar.setActionTextColor(Color.YELLOW);
+                snackbar.show();
+            }
+        };
+
+        ItemTouchHelper itemTouchhelper = new ItemTouchHelper(swipeToDeleteCallback);
+        itemTouchhelper.attachToRecyclerView(favouritesRecyclerView);
     }
 
 }

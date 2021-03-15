@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -25,7 +26,7 @@ public class ForgotPasswordActivity extends AppCompatActivity {
     Context context = this;
     JsonObject jsonObject;
 
-    String urlForgotPasswordVerifier = CommonUtils.IP + "/PMG/pmg_android/login/forgotPasswordVerifier.php";
+    String urlForgotPasswordVerifier = CommonUtils.IP + "/pmg_android/login/forgotPasswordVerifier.php";
 
     ProgressDialog progressDialog;
 
@@ -33,6 +34,11 @@ public class ForgotPasswordActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_forgot_password);
+
+        WindowManager.LayoutParams params = getWindow().getAttributes();
+        params.flags |= WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON;
+        params.screenBrightness = 1;
+        getWindow().setAttributes(params);
 
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);

@@ -3,7 +3,7 @@ package bluebase.in.pioneermusicgym;
 public class PlaylistItems {
     private int playlistId;
     private String playlistTitle;
-    private String numberOfSongs;
+    private int numberOfSongs;
     private String createdOn;
 
     public int getPlaylistId() {
@@ -22,11 +22,11 @@ public class PlaylistItems {
         this.playlistTitle = playlistTitle;
     }
 
-    public String getNumberOfSongs() {
+    public int getNumberOfSongs() {
         return numberOfSongs;
     }
 
-    public void setNumberOfSongs(String numberOfSongs) {
+    public void setNumberOfSongs(int numberOfSongs) {
         this.numberOfSongs = numberOfSongs;
     }
 

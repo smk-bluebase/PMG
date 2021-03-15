@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -54,12 +55,12 @@
                     android:checked="true"
                     android:layout_below="@id/settingsTitle"
                     android:layout_marginTop="15dp"
-                    android:text="Get New Songs Notifications           "
+                    android:text="Get Notifications           "
                     android:textSize="17dp" />
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/languagePreferredTextLayout"
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.ExposedDropdownMenu"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="15dp"
@@ -71,7 +72,8 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:textColor="@color/black"
-                        android:editable="false"/>
+                        android:editable="false"
+                        android:selectAllOnFocus="false" />
 
                 </com.google.android.material.textfield.TextInputLayout>
 
@@ -91,41 +93,6 @@
                     android:layout_height="wrap_content"
                     android:layout_below="@id/volumeTitle"
                     android:layout_marginTop="15dp" />
-
-                <TextView
-                    android:id="@+id/bassTitle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="20dp"
-                    android:layout_marginLeft="10dp"
-                    android:layout_below="@id/volumeSeekBar"
-                    android:text="Bass"
-                    android:textSize="20sp" />
-
-                <SeekBar
-                    android:id="@+id/bassSeekBar"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@id/bassTitle"
-                    android:layout_marginTop="15dp" />
-
-                <TextView
-                    android:id="@+id/trebleTitle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="20dp"
-                    android:layout_marginLeft="10dp"
-                    android:layout_below="@id/bassSeekBar"
-                    android:text="Treble"
-                    android:textSize="20sp" />
-
-                <SeekBar
-                    android:id="@+id/trebleSeekBar"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@id/trebleTitle"
-                    android:layout_marginTop="15dp"
-                    android:layout_marginBottom="15dp" />
 
             </RelativeLayout>
 

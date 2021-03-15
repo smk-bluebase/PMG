@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.SearchView;
 import android.widget.Toast;
 
 import com.google.gson.JsonObject;
@@ -14,6 +15,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -26,22 +28,25 @@ public class TamilFragment extends Fragment {
 
     public static RecyclerView tamilMovieRecyclerView;
     public static ArrayList<MovieItems> tamilMovieList;
-    public static MovieAdapter movieAdapter;
 
-    public static String urlGetMovies = CommonUtils.IP + "/PMG/pmg_android/search/getMovies.php";
-    public static String urlSearchMovies = CommonUtils.IP + "/PMG/pmg_android/search/searchMovies.php";
+    public static String urlGetMovies = CommonUtils.IP + "/pmg_android/search/getMoviesLanguageWise.php";
+    public static String urlSearchMovies = CommonUtils.IP + "/pmg_android/search/searchMovies.php";
+    public static String urlSingerMovies = CommonUtils.IP + "/pmg_android/search/getSingerMovies.php";
+    public static String urlComposerMovies = CommonUtils.IP + "/pmg_android/search/getComposerMovies.php";
 
     public static JsonObject jsonObject;
 
-    public static int lowerLimit;
-    public static int upperLimit;
-    public static int searchLowerLimit;
-    public static int searchUpperLimit;
+    public static int tamilMovieIndex;
+    public static int searchTamilMovieIndex;
 
     public static boolean isSearching = false;
     public static String searchQuery = "";
+    public static boolean isScrolling = false;
+    public static boolean isTamilMoviesAvailable = true;
 
-    public static int languageId = 2;
+    public static int languageId = 1;
+
+    public static boolean isLoaded = false;
 
     @Nullable
     @Override
@@ -59,100 +64,160 @@ public class TamilFragment extends Fragment {
 
         context = getContext();
 
-        tamilMovieRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
-                super.onScrollStateChanged(recyclerView, newState);
+        isLoaded = true;
+    }
 
-                if(!recyclerView.canScrollVertically(1)){
-                    if(isSearching){
-                        searchLowerLimit = searchUpperLimit;
-                        searchUpperLimit = searchUpperLimit + CommonUtils.queryLimit;
+    public static void onOpen(){
+        if(isLoaded) {
+            LibraryFragment.searchView.setQuery("", false);
 
-                        getTamilMovies(searchQuery, searchLowerLimit, searchUpperLimit, urlSearchMovies);
-                    }else{
-                        lowerLimit = upperLimit;
-                        upperLimit = upperLimit + CommonUtils.queryLimit;
+            tamilMovieRecyclerView.clearOnScrollListeners();
 
-                        getTamilMovies("", lowerLimit, upperLimit, urlGetMovies);
+            tamilMovieRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+                @Override
+                public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                    super.onScrollStateChanged(recyclerView, newState);
+
+                    if (!recyclerView.canScrollVertically(1) && isTamilMoviesAvailable) {
+                        if (isSearching) {
+                            searchTamilMovieIndex = searchTamilMovieIndex + CommonUtils.queryLimit;
+                            getTamilMovies(searchQuery, searchTamilMovieIndex, CommonUtils.queryLimit, urlSearchMovies);
+                        } else {
+                            tamilMovieIndex = tamilMovieIndex + CommonUtils.queryLimit;
+                            getTamilMovies("", tamilMovieIndex, CommonUtils.queryLimit, urlGetMovies);
+                        }
+
+                        isScrolling = true;
                     }
                 }
-            }
-        });
+            });
 
-        tamilMovieList = new ArrayList<>();
+            tamilMovieIndex = 0;
+            searchTamilMovieIndex = 0;
 
-        lowerLimit = 0;
-        upperLimit = CommonUtils.queryLimit;
+            isSearching = false;
+            searchQuery = "";
+            isScrolling = false;
+            isTamilMoviesAvailable = true;
 
-        getTamilMovies("", lowerLimit, upperLimit, urlGetMovies);
+            tamilMovieList = new ArrayList<>();
 
+            getTamilMovies("", tamilMovieIndex, CommonUtils.queryLimit, urlGetMovies);
+        }
     }
 
     public static void onQuerySubmit(String query){
         tamilMovieList = new ArrayList<>();
+        isTamilMoviesAvailable = true;
 
         if(!query.equals("")) {
             isSearching = true;
-            searchQuery = query;
+            isScrolling = false;
 
-            searchLowerLimit = 0;
-            searchUpperLimit = CommonUtils.queryLimit;
+            searchTamilMovieIndex = 0;
 
-            getTamilMovies(searchQuery, searchLowerLimit, searchUpperLimit, urlSearchMovies);
+            if(query.startsWith("SingerId : ")){
+                CommonUtils.isSearching = true;
+                searchQuery = query.substring(11);
+                getSingerMovies(searchQuery, searchTamilMovieIndex, urlSingerMovies);
+            }else if(query.startsWith("ComposerId : ")) {
+                CommonUtils.isSearching = true;
+                searchQuery = query.substring(13);
+                getComposerMovies(searchQuery, searchTamilMovieIndex, urlComposerMovies);
+            }else {
+                CommonUtils.isSearching = false;
+                searchQuery = query;
+                getTamilMovies(searchQuery, searchTamilMovieIndex, CommonUtils.queryLimit, urlSearchMovies);
+            }
+
         }else {
             isSearching = false;
             searchQuery = "";
+            isScrolling = true;
+            CommonUtils.isSearching = false;
 
-            lowerLimit = 0;
-            upperLimit = CommonUtils.queryLimit;
+            tamilMovieIndex = 0;
 
-            getTamilMovies(searchQuery, lowerLimit, upperLimit, urlGetMovies);
+            getTamilMovies(searchQuery, tamilMovieIndex, CommonUtils.queryLimit, urlGetMovies);
         }
     }
 
     public static void onQueryChange(String newText){
         tamilMovieList = new ArrayList<>();
+        isTamilMoviesAvailable = true;
 
         if(!newText.equals("")) {
             isSearching = true;
-            searchQuery = newText;
+            isScrolling = false;
 
-            searchLowerLimit = 0;
-            searchUpperLimit = CommonUtils.queryLimit;
+            searchTamilMovieIndex = 0;
 
-            getTamilMovies(searchQuery, searchLowerLimit, searchUpperLimit, urlSearchMovies);
+            if(newText.startsWith("SingerId : ")){
+                CommonUtils.isSearching = true;
+                searchQuery = newText.substring(11);
+                getSingerMovies(searchQuery, searchTamilMovieIndex, urlSingerMovies);
+            }else if(newText.startsWith("ComposerId : ")) {
+                CommonUtils.isSearching = true;
+                searchQuery = newText.substring(13);
+                getComposerMovies(searchQuery, searchTamilMovieIndex, urlComposerMovies);
+            }else {
+                CommonUtils.isSearching = false;
+                searchQuery = newText;
+                getTamilMovies(searchQuery, searchTamilMovieIndex, CommonUtils.queryLimit, urlSearchMovies);
+            }
+
         }else {
             isSearching = false;
             searchQuery = "";
+            isScrolling = true;
+            CommonUtils.isSearching = false;
 
-            lowerLimit = 0;
-            upperLimit = CommonUtils.queryLimit;
+            tamilMovieIndex = 0;
 
-            getTamilMovies(searchQuery, lowerLimit, upperLimit, urlGetMovies);
+            getTamilMovies(searchQuery, tamilMovieIndex, CommonUtils.queryLimit, urlGetMovies);
         }
     }
 
-    public static void getTamilMovies(String searchQuery, int lowerLimit, int upperLimit, String url){
+    public static void getTamilMovies(String searchQuery, int index, int limit, String url){
         jsonObject = new JsonObject();
         jsonObject.addProperty("languageId", languageId);
 
         if(!searchQuery.equals(""))
             jsonObject.addProperty("movieName", searchQuery);
 
-        jsonObject.addProperty("lowerLimit", lowerLimit);
-        jsonObject.addProperty("upperLimit", upperLimit);
+        jsonObject.addProperty("index", index);
+        jsonObject.addProperty("limit", limit);
 
-        PostTamilMovies postTamilMovies = new PostTamilMovies(context, url);
+        PostTamilMovies postTamilMovies = new PostTamilMovies(context, url, index);
+        postTamilMovies.checkServerAvailability(2);
+    }
+
+    public static void getSingerMovies(String searchQuery, int index, String url){
+        jsonObject = new JsonObject();
+        jsonObject.addProperty("singerId", searchQuery);
+        jsonObject.addProperty("languageId", languageId);
+
+        PostTamilMovies postTamilMovies = new PostTamilMovies(context, url, index);
+        postTamilMovies.checkServerAvailability(2);
+    }
+
+    public static void getComposerMovies(String searchQuery, int index, String url){
+        jsonObject = new JsonObject();
+        jsonObject.addProperty("composerId", searchQuery);
+        jsonObject.addProperty("languageId", languageId);
+
+        PostTamilMovies postTamilMovies = new PostTamilMovies(context, url, index);
         postTamilMovies.checkServerAvailability(2);
     }
 
     public static class PostTamilMovies extends PostRequest{
         String url;
+        int index;
 
-        public PostTamilMovies(Context context, String url){
+        public PostTamilMovies(Context context, String url, int index){
             super(context);
             this.url = url;
+            this.index = index;
         }
 
         @Override
@@ -166,6 +231,8 @@ public class TamilFragment extends Fragment {
 
         @Override
         public void onFinish(JSONArray jsonArray){
+            if(index == 0) tamilMovieList = new ArrayList<>();
+
             try{
                 JSONObject jsonObject =  jsonArray.getJSONObject(0);
 
@@ -201,21 +268,36 @@ public class TamilFragment extends Fragment {
 
                     }
 
-                    tamilMovieRecyclerView.setHasFixedSize(true);
-                    LinearLayoutManager linearLayoutManager = new LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false);
-                    movieAdapter = new MovieAdapter(tamilMovieList);
-                    tamilMovieRecyclerView.setLayoutManager(linearLayoutManager);
-                    tamilMovieRecyclerView.setAdapter(null);
-                    tamilMovieRecyclerView.setAdapter(movieAdapter);
+                    populateTamilMovies();
+
+                }else if(isScrolling){
+                    Toast.makeText(context, "No More Data", Toast.LENGTH_SHORT).show();
+                    isTamilMoviesAvailable = false;
                 }else if(isSearching){
                     Toast.makeText(context, "No Match Found", Toast.LENGTH_SHORT).show();
-                }else {
-                    Toast.makeText(context, "No Data", Toast.LENGTH_SHORT).show();
+                    isTamilMoviesAvailable = false;
+                    populateTamilMovies();
                 }
 
             }catch(JSONException e){
                 e.printStackTrace();
             }
+        }
+
+        public void populateTamilMovies(){
+            tamilMovieRecyclerView.setHasFixedSize(true);
+            LinearLayoutManager linearLayoutManager = new LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false);
+            linearLayoutManager.scrollToPosition(index);
+            MovieAdapter tamilMovieAdapter = new MovieAdapter(new ArrayList<>(tamilMovieList));
+            tamilMovieRecyclerView.setLayoutManager(linearLayoutManager);
+            tamilMovieRecyclerView.setAdapter(null);
+            tamilMovieRecyclerView.setAdapter(tamilMovieAdapter);
+
+            tamilMovieAdapter.setOnItemClickListener(position -> {
+                CommonUtils.isSearching = false;
+                LibraryFragment.viewPager1.setCurrentItem(0);
+                LibraryFragment.searchView.setQuery("MovieId : " + tamilMovieAdapter.getData().get(position).getMovieId(), true);
+            });
         }
     }
 

@@ -37,7 +37,7 @@ public class ProfileFragment extends Fragment {
     TextView experience;
     TextView languagesKnown;
 
-    String urlGetProfile = CommonUtils.IP + "/PMG/pmg_android/user_settings/getProfileDetails.php";
+    String urlGetProfile = CommonUtils.IP + "/pmg_android/user_settings/getProfileDetails.php";
 
     @Nullable
     @Override
@@ -126,8 +126,8 @@ public class ProfileFragment extends Fragment {
                     mobileNo.setText(jsonObject.getString("mobileNo"));
                     if(!jsonObject.getString("experience").equals("")) experience.setText(jsonObject.getString("experience") + " years");
                     else experience.setText("0 years");
-                    if(jsonObject.getInt("english") == 1) languages = " English ";
-                    if(jsonObject.getInt("tamil") == 1) languages += " Tamil ";
+                    if(jsonObject.getInt("tamil") == 1) languages = " Tamil ";
+                    if(jsonObject.getInt("malayalam") == 1) languages += " Malayalam ";
                     if(jsonObject.getInt("hindi") == 1) languages += " Hindi ";
 
                     languagesKnown.setText(languages);

@@ -1,6 +1,5 @@
 package bluebase.in.pioneermusicgym;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
@@ -19,16 +18,14 @@ import java.util.List;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
-public class LibraryFragment extends Fragment {
-    Context context;
 
-    ViewPager viewPager1;
+public class LibraryFragment extends Fragment {
+    public static ViewPager viewPager1;
     PagerAdapter pagerAdapter1;
-    TabLayout libraryTabLayout;
+    public static TabLayout libraryTabLayout;
 
     public static SearchView searchView;
 
@@ -57,26 +54,15 @@ public class LibraryFragment extends Fragment {
         titlesList.add("ARTISTS");
         titlesList.add("MOVIES");
 
-        viewPager1 = view.findViewById(R.id.viewPager);
         libraryTabLayout = view.findViewById(R.id.libraryTabLayout);
-        pagerAdapter1 = new SectionsPagerAdapter(context, getFragmentManager(), fragmentList, titlesList);
+        viewPager1 = view.findViewById(R.id.viewPager);
 
-        searchView = view.findViewById(R.id.searchLibrarySearchView);
+        pagerAdapter1 = new SectionsPagerAdapter(getChildFragmentManager(), fragmentList, titlesList);
 
-        return view;
-    }
-
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-
-        context = getContext();
-
+        viewPager1.setOffscreenPageLimit(3);
         viewPager1.setAdapter(pagerAdapter1);
         libraryTabLayout.setupWithViewPager(viewPager1);
         CommonUtils.openTab = 1;
-
-        searchView.setImeOptions(EditorInfo.IME_ACTION_DONE);
 
         libraryTabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
@@ -84,17 +70,18 @@ public class LibraryFragment extends Fragment {
                 switch(tab.getPosition()){
                     case 0:
                         CommonUtils.openTab = 1;
-                        searchView.setQuery("", false);
+                        SongsFragment.onOpen();
                         break;
 
                     case 1:
                         CommonUtils.openTab = 2;
-                        searchView.setQuery("", false);
+                        SingersFragment.onOpen();
+                        if(!CommonUtils.isHomeSearching) ArtistsFragment.viewPager2.setCurrentItem(0);
                         break;
 
                     case 2:
                         CommonUtils.openTab = 4;
-                        searchView.setQuery("", false);
+                        MoviesFragment.onOpen();
                         break;
 
                     default:
@@ -112,6 +99,10 @@ public class LibraryFragment extends Fragment {
                 // Do Nothing!
             }
         });
+
+        searchView = view.findViewById(R.id.searchLibrarySearchView);
+        searchView.setImeOptions(EditorInfo.IME_ACTION_DONE);
+        searchView.setIconified(false);
 
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
@@ -147,7 +138,6 @@ public class LibraryFragment extends Fragment {
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                System.out.println("CommonUtils.openTab : " + CommonUtils.openTab);
 
                 switch (CommonUtils.openTab){
                     case 1:
@@ -177,6 +167,20 @@ public class LibraryFragment extends Fragment {
             }
         });
 
+        return view;
     }
 
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+    }
+
+    public static void onLoaded(){
+        if(CommonUtils.searchQuery.startsWith("SingerName : ") || CommonUtils.searchQuery.startsWith("ComposerName : ")) {
+            LibraryFragment.libraryTabLayout.getTabAt(1).select();
+        }else if(CommonUtils.searchQuery.startsWith("MovieId : ")){
+            searchView.setQuery(CommonUtils.searchQuery, false);
+            CommonUtils.isHomeSearching = false;
+        }
+    }
 }

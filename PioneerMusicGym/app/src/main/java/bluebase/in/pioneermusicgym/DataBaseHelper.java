@@ -32,15 +32,13 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         // Singers
         String singersTable = "CREATE TABLE singers (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," +
                             "singer_id INTEGER NOT NULL, singer_name VARCHAR NOT NULL," +
-                            "number_of_songs INTEGER NOT NULL, number_of_albums INTEGER NOT NULL," +
-                            "number_of_movies INTEGER NOT NULL)";
+                            "number_of_songs INTEGER NOT NULL, number_of_movies INTEGER NOT NULL)";
         db.execSQL(singersTable);
 
         // Composers
         String composersTable = "CREATE TABLE composers (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," +
                             "composer_id INTEGER NOT NULL, composer_name VARCHAR NOT NULL," +
-                            "number_of_songs INTEGER NOT NULL, number_of_albums INTEGER NOT NULL," +
-                            "number_of_movies INTEGER NOT NULL)";
+                            "number_of_songs INTEGER NOT NULL, number_of_movies INTEGER NOT NULL)";
         db.execSQL(composersTable);
 
         // Movies
@@ -51,16 +49,13 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
         // Song Master
         String songMasterTable = "CREATE TABLE song_master (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
-                                "song_id INTEGER NOT NULL, title VARCHAR NOT NULL, album_name VARCHAR, movie_name VARCHAR, " +
-                                "album_singer VARCHAR, album_composer VARCHAR, movie_singer VARCHAR, movie_composer VARCHAR," +
-                                "language_code VARCHAR NOT NULL, year VARCHAR NOT NULL, duration VARCHAR NOT NULL," +
-                                "file_location VARCHAR NOT NULL, lyrics_location VARCHAR NOT NULL)";
+                                "song_id INTEGER NOT NULL, title VARCHAR NOT NULL, movie_name VARCHAR, " +
+                                "movie_singer VARCHAR, year VARCHAR NOT NULL, duration VARCHAR NOT NULL)";
         db.execSQL(songMasterTable);
 
         // Playlists
-        String playlistsTable = "CREATE TABLE playlists (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," +
-                                "playlist_id INTEGER, playlist_title VARCHAR NOT NULL, number_of_songs INTEGER NOT NULL," +
-                                "created_on VARCHAR NOT NULL, is_local INTEGER NOT NULL)";
+        String playlistsTable = "CREATE TABLE playlists (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                                "playlist_title VARCHAR NOT NULL, created_on VARCHAR NOT NULL)";
         db.execSQL(playlistsTable);
 
         // Playlist - Song Table
@@ -72,6 +67,16 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         String favouritesTable = "CREATE TABLE favourites (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," +
                                 "song_id INTEGER NOT NULL)";
         db.execSQL(favouritesTable);
+
+        // Settings Table
+        String settingsTable = "CREATE TABLE settings (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," +
+                                "get_notification INTEGER NOT NULL, language_code INTEGER NOT NULL)";
+        db.execSQL(settingsTable);
+
+        // Notifications Table
+        String notificationTable = "CREATE TABLE notifications (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                                "notification_id INTEGER NOT NULL)";
+        db.execSQL(notificationTable);
 
     }
 
@@ -133,13 +138,12 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         db.close();
     }
 
-    public void insertSingers(int singerId, String singerName, int numberOfSongs, int numberOfAlbums, int numberOfMovies){
+    public void insertSingers(int singerId, String singerName, int numberOfSongs, int numberOfMovies){
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues cv = new ContentValues();
         cv.put("singer_id", singerId);
         cv.put("singer_name", singerName);
         cv.put("number_of_songs", numberOfSongs);
-        cv.put("number_of_albums", numberOfAlbums);
         cv.put("number_of_movies", numberOfMovies);
 
         db.insert("singers", null, cv);
@@ -162,7 +166,6 @@ public class DataBaseHelper extends SQLiteOpenHelper {
                     jsonObject.put("singerId", resultSet.getString(resultSet.getColumnIndex("singer_id")));
                     jsonObject.put("singerName", resultSet.getString(resultSet.getColumnIndex("singer_name")));
                     jsonObject.put("numberOfSongs", resultSet.getString(resultSet.getColumnIndex("number_of_songs")));
-                    jsonObject.put("numberOfAlbums", resultSet.getString(resultSet.getColumnIndex("number_of_albums")));
                     jsonObject.put("numberOfMovies", resultSet.getString(resultSet.getColumnIndex("number_of_movies")));
 
                     jsonArray.put(jsonObject);
@@ -180,20 +183,6 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         return  jsonArray;
     }
 
-    public int singersMaxId(){
-        int maxId = 0;
-
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor resultSet = db.rawQuery("SELECT MAX(singer_id) AS max_singer_id FROM singers", null);
-        resultSet.moveToFirst();
-
-        if(resultSet.getCount() > 0) {
-            maxId = resultSet.getInt(resultSet.getColumnIndex("max_singer_id"));
-        }
-
-        return maxId;
-    }
-
 
     // COMPOSERS
     public void deleteComposers(){
@@ -202,13 +191,12 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         db.close();
     }
 
-    public void insertComposers(int composerId, String composerName, int numberOfSongs, int numberOfAlbums, int numberOfMovies){
+    public void insertComposers(int composerId, String composerName, int numberOfSongs, int numberOfMovies){
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues cv = new ContentValues();
         cv.put("composer_id", composerId);
         cv.put("composer_name", composerName);
         cv.put("number_of_songs", numberOfSongs);
-        cv.put("number_of_albums", numberOfAlbums);
         cv.put("number_of_movies", numberOfMovies);
 
         db.insert("composers", null, cv);
@@ -231,7 +219,6 @@ public class DataBaseHelper extends SQLiteOpenHelper {
                     jsonObject.put("composerId", resultSet.getString(resultSet.getColumnIndex("composer_id")));
                     jsonObject.put("composerName", resultSet.getString(resultSet.getColumnIndex("composer_name")));
                     jsonObject.put("numberOfSongs", resultSet.getString(resultSet.getColumnIndex("number_of_songs")));
-                    jsonObject.put("numberOfAlbums", resultSet.getString(resultSet.getColumnIndex("number_of_albums")));
                     jsonObject.put("numberOfMovies", resultSet.getString(resultSet.getColumnIndex("number_of_movies")));
 
                     jsonArray.put(jsonObject);
@@ -247,87 +234,6 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         resultSet.close();
 
         return  jsonArray;
-    }
-
-    public int composersMaxId(){
-        int maxId = 0;
-
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor resultSet = db.rawQuery("SELECT MAX(composer_id) AS max_composer_id FROM composers", null);
-        resultSet.moveToFirst();
-
-        if(resultSet.getCount() > 0) {
-            maxId = resultSet.getInt(resultSet.getColumnIndex("max_composer_id"));
-        }
-
-        return maxId;
-    }
-
-
-    // ALBUMS
-    public void deleteAlbums(){
-        SQLiteDatabase db = this.getWritableDatabase();
-        db.delete("albums", null, null);
-        db.close();
-    }
-
-    public void insertAlbums(int albumId, String albumName, String year, int numberOfSongs){
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues cv = new ContentValues();
-        cv.put("album_id", albumId);
-        cv.put("album_name", albumName);
-        cv.put("year", year);
-        cv.put("number_of_songs", numberOfSongs);
-
-        db.insert("albums", null, cv);
-        db.close();
-    }
-
-    public JSONArray selectAlbums(){
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor resultSet = db.rawQuery("SELECT * FROM albums", null);
-        resultSet.moveToFirst();
-
-        JSONArray jsonArray = new JSONArray();
-
-        if(resultSet.getCount() > 0){
-            int i = 0;
-            while(i < resultSet.getCount()){
-                try {
-                    JSONObject jsonObject = new JSONObject();
-
-                    jsonObject.put("albumId", resultSet.getString(resultSet.getColumnIndex("album_id")));
-                    jsonObject.put("albumName", resultSet.getString(resultSet.getColumnIndex("album_name")));
-                    jsonObject.put("year", resultSet.getString(resultSet.getColumnIndex("year")));
-                    jsonObject.put("numberOfSongs", resultSet.getString(resultSet.getColumnIndex("number_of_songs")));
-
-                    jsonArray.put(jsonObject);
-                }catch(JSONException e){
-                    e.printStackTrace();
-                }
-
-                resultSet.moveToNext();
-                i++;
-            }
-        }
-
-        resultSet.close();
-
-        return  jsonArray;
-    }
-
-    public int albumsMaxId(){
-        int maxId = 0;
-
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor resultSet = db.rawQuery("SELECT MAX(album_id) AS max_album_id FROM albums", null);
-        resultSet.moveToFirst();
-
-        if(resultSet.getCount() > 0) {
-            maxId = resultSet.getInt(resultSet.getColumnIndex("max_album_id"));
-        }
-
-        return maxId;
     }
 
 
@@ -383,95 +289,31 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         return  jsonArray;
     }
 
-    public int moviesMaxId(){
-        int maxId = 0;
 
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor resultSet = db.rawQuery("SELECT MAX(movie_id) AS max_movie_id FROM movie", null);
-        resultSet.moveToFirst();
-
-        if(resultSet.getCount() > 0) {
-            maxId = resultSet.getInt(resultSet.getColumnIndex("max_movie_id"));
-        }
-
-        return maxId;
-    }
-
-
-//     SONG MASTER
-//    public void deleteSongMaster(){
-//        SQLiteDatabase db = this.getWritableDatabase();
-//        db.delete("song_master", null, null);
-//        db.close();
-//    }
-//
-//    public void insertSongMaster(int songId, String title, String artistName, String composerName, String albumName, String movieName, String duration, String songLink){
-//        SQLiteDatabase db = this.getWritableDatabase();
-//        ContentValues cv = new ContentValues();
-//        cv.put("song_id", songId);
-//        cv.put("title", title);
-//        cv.put("artist_name", artistName);
-//        cv.put("composer_name", composerName);
-//        cv.put("album_name", albumName);
-//        cv.put("movie_name", movieName);
-//        cv.put("duration", duration);
-//        cv.put("song_link", songLink);
-//
-//        db.insert("song_master", null, cv);
-//        db.close();
-//    }
-//
-//    public JSONArray selectSongMaster(){
-//        SQLiteDatabase db = this.getReadableDatabase();
-//        Cursor resultSet = db.rawQuery("SELECT * FROM song_master", null);
-//        resultSet.moveToFirst();
-//
-//        JSONArray jsonArray = new JSONArray();
-//
-//        if(resultSet.getCount() > 0){
-//            try {
-//                JSONObject jsonObject = new JSONObject();
-//
-//                jsonObject.put("songId", resultSet.getString(resultSet.getColumnIndex("song_id")));
-//                jsonObject.put("title", resultSet.getString(resultSet.getColumnIndex("title")));
-//                jsonObject.put("artistName", resultSet.getString(resultSet.getColumnIndex("artist_name")));
-//                jsonObject.put("composerName", resultSet.getString(resultSet.getColumnIndex("composer_name")));
-//                jsonObject.put("albumName", resultSet.getString(resultSet.getColumnIndex("album_name")));
-//                jsonObject.put("movieName", resultSet.getString(resultSet.getColumnIndex("movie_name")));
-//                jsonObject.put("duration", resultSet.getString(resultSet.getColumnIndex("duration")));
-//                jsonObject.put("songLink", resultSet.getString(resultSet.getColumnIndex("song_link")));
-//
-//                jsonArray.put(jsonObject);
-//            }catch(JSONException e){
-//                e.printStackTrace();
-//            }
-//        }
-//
-//        resultSet.close();
-//
-//        return  jsonArray;
-//    }
-
-
-    // PLAYLISTS
-    public void insertPlaylists(int playlistId, String playlistTitle, int numberOfSongs, String createdOn, int isLocal){
+    //  SONG MASTER
+    public void deleteSongMaster(){
         SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues cv = new ContentValues();
-        cv.put("playlist_id", playlistId);
-        cv.put("playlist_title", playlistTitle);
-        cv.put("number_of_songs", numberOfSongs);
-        cv.put("created_on", createdOn);
-        cv.put("is_local", isLocal);
-
-        db.insert("playlists", null, cv);
+        db.delete("song_master", null, null);
         db.close();
     }
 
-    public JSONArray selectPlaylists(){
+    public void insertSongMaster(int songId, String title, String movieName, String movieSinger, String year, String duration){
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put("song_id", songId);
+        cv.put("title", title);
+        cv.put("movie_name", movieName);
+        cv.put("movie_singer", movieSinger);
+        cv.put("year", year);
+        cv.put("duration", duration);
+
+        db.insert("song_master", null, cv);
+        db.close();
+    }
+
+    public JSONArray selectSongMaster(){
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor resultSet = db.rawQuery("SELECT playlist_id, playlist_title, number_of_songs, created_on " +
-                                        "FROM playlists" +
-                                        " ORDER BY playlist_id, playlist_title", null);
+        Cursor resultSet = db.rawQuery("SELECT * FROM song_master ORDER BY title ASC", null);
         resultSet.moveToFirst();
 
         JSONArray jsonArray = new JSONArray();
@@ -482,9 +324,75 @@ public class DataBaseHelper extends SQLiteOpenHelper {
                 try {
                     JSONObject jsonObject = new JSONObject();
 
-                    jsonObject.put("playlistId", resultSet.getInt(resultSet.getColumnIndex("playlist_id")));
+                    jsonObject.put("songId", resultSet.getString(resultSet.getColumnIndex("song_id")));
+                    jsonObject.put("title", resultSet.getString(resultSet.getColumnIndex("title")));
+                    jsonObject.put("movieName", resultSet.getString(resultSet.getColumnIndex("movie_name")));
+                    jsonObject.put("movieSinger", resultSet.getString(resultSet.getColumnIndex("movie_singer")));
+                    jsonObject.put("year", resultSet.getString(resultSet.getColumnIndex("year")));
+                    jsonObject.put("duration", resultSet.getString(resultSet.getColumnIndex("duration")));
+
+                    jsonArray.put(jsonObject);
+                }catch(JSONException e){
+                    e.printStackTrace();
+                }
+
+                resultSet.moveToNext();
+                i++;
+            }
+        }
+
+        resultSet.close();
+
+        return  jsonArray;
+    }
+
+    public void deleteFromSongMaster(int songId){
+        String[] args = {String.valueOf(songId)};
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete("song_master", "song_id = ?", args);
+        db.close();
+    }
+
+
+    // PLAYLISTS
+    public void insertPlaylists(String playlistTitle, String createdOn){
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put("playlist_title", playlistTitle);
+        cv.put("created_on", createdOn);
+
+        db.insert("playlists", null, cv);
+        db.close();
+    }
+
+    public void insertIntoPlaylists(int playlistId, String playlistTitle, String createdOn){
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put("id", playlistId);
+        cv.put("playlist_title", playlistTitle);
+        cv.put("created_on", createdOn);
+
+        db.insert("playlists", null, cv);
+        db.close();
+    }
+
+    public JSONArray selectPlaylists(){
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor resultSet = db.rawQuery("SELECT id, playlist_title, created_on " +
+                                        "FROM playlists " +
+                                        "ORDER BY playlist_title", null);
+        resultSet.moveToFirst();
+
+        JSONArray jsonArray = new JSONArray();
+
+        if(resultSet.getCount() > 0){
+            int i = 0;
+            while(i < resultSet.getCount()){
+                try {
+                    JSONObject jsonObject = new JSONObject();
+
+                    jsonObject.put("playlistId", resultSet.getInt(resultSet.getColumnIndex("id")));
                     jsonObject.put("playlistTitle", resultSet.getString(resultSet.getColumnIndex("playlist_title")));
-                    jsonObject.put("numberOfSongs", resultSet.getInt(resultSet.getColumnIndex("number_of_songs")));
                     jsonObject.put("createdOn", resultSet.getString(resultSet.getColumnIndex("created_on")));
 
                     jsonArray.put(jsonObject);
@@ -502,34 +410,33 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         return  jsonArray;
     }
 
-    public int playlistLocalMaxId(){
-        int maxId = 0;
-
+    public boolean ifPlaylistNameExists(String playlistTitle){
+        String[] args = {playlistTitle};
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor resultSet = db.rawQuery("SELECT MAX(playlist_id) AS max_local_playlist_id FROM playlists WHERE is_local = 1", null);
+        Cursor resultSet = db.rawQuery("SELECT COUNT(*) AS COUNT FROM playlists WHERE playlist_title = ?", args);
         resultSet.moveToFirst();
 
-        if(resultSet.getCount() > 0) {
-            maxId = resultSet.getInt(resultSet.getColumnIndex("max_local_playlist_id"));
+        int count = 0;
+
+        if(resultSet.getCount() > 0){
+            count = resultSet.getInt(resultSet.getColumnIndex("COUNT"));
         }
 
-        return maxId;
+        resultSet.close();
+
+        if(count == 0) return true;
+        else return false;
     }
 
-    public void deleteFromPlaylists(){
+    public void deleteFromPlaylists(int id){
+        String[] args = {String.valueOf(id)};
         SQLiteDatabase db = this.getWritableDatabase();
-        db.delete("playlists", "is_local = 0", null);
+        db.delete("playlists", "id = ?", args);
         db.close();
     }
 
 
     // PLAYLISTS SONGS
-    public void deletePlaylistSongs(){
-        SQLiteDatabase db = this.getWritableDatabase();
-        db.delete("playlists_songs", null, null);
-        db.close();
-    }
-
     public void insertPlaylistSongs(int playlist_id, int song_id){
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues cv = new ContentValues();
@@ -540,29 +447,63 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         db.close();
     }
 
-    public JSONArray selectPlaylistSongs(){
+    public int[] selectPlaylistSongs(int playlistId){
+        String[] args = {String.valueOf(playlistId)};
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor resultSet = db.rawQuery("SELECT * FROM playlists_songs", null);
+        Cursor resultSet = db.rawQuery("SELECT song_id FROM playlists_songs WHERE playlist_id = ?", args);
         resultSet.moveToFirst();
 
-        JSONArray jsonArray = new JSONArray();
+        int songIds[] = {};
 
         if(resultSet.getCount() > 0){
-            try {
-                JSONObject jsonObject = new JSONObject();
+            int i = 0;
+            songIds = new int[resultSet.getCount()];
+            while(i < resultSet.getCount()){
+                try {
+                    songIds[i] = resultSet.getInt(resultSet.getColumnIndex("song_id"));
+                }catch(Exception e){
+                    e.printStackTrace();
+                }
 
-                jsonObject.put("playlistId", resultSet.getString(resultSet.getColumnIndex("playlist_id")));
-                jsonObject.put("songId", resultSet.getString(resultSet.getColumnIndex("song_id")));
-
-                jsonArray.put(jsonObject);
-            }catch(JSONException e){
-                e.printStackTrace();
+                resultSet.moveToNext();
+                i++;
             }
         }
 
         resultSet.close();
 
-        return  jsonArray;
+        return songIds;
+    }
+
+    public int selectPlaylistSongsCount(int playlistId){
+        String[] args = {String.valueOf(playlistId)};
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor resultSet = db.rawQuery("SELECT COUNT(*) AS count FROM playlists_songs WHERE playlist_id = ?", args);
+        resultSet.moveToFirst();
+
+        int count = 0;
+
+        if(resultSet.getCount() > 0) {
+            count = resultSet.getInt(resultSet.getColumnIndex("count"));
+        }
+
+        resultSet.close();
+
+        return count;
+    }
+
+    public void deleteFromPlaylistSongs(int playlistId, int songId){
+        String[] args = {String.valueOf(playlistId), String.valueOf(songId)};
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete("playlists_songs", "playlist_id = ? AND song_id = ?", args);
+        db.close();
+    }
+
+    public void deleteFromPlaylistSongs(int playlistId){
+        String[] args = {String.valueOf(playlistId)};
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete("playlists_songs", "playlist_id = ?", args);
+        db.close();
     }
 
 
@@ -576,38 +517,41 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         db.close();
     }
 
-    public JSONArray selectFavourites(){
+    public void insertIntoFavourites(int id, int songId){
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put("id", id);
+        cv.put("song_id", songId);
+
+        db.insert("favourites", null, cv);
+        db.close();
+    }
+
+    public int[] selectFavourites(){
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor resultSet = db.rawQuery("SELECT sm.song_id, sm.title, sm.album_name, sm.movie_name," +
-                                    "sm.album_singer, sm.movie_singer, sm.year, sm.duration FROM song_master sm" +
-                                    "INNER JOIN favourites f ON f.song_id = sm.song_id " +
-                                    "ORDER BY f.id, sm.title ASC", null);
+        Cursor resultSet = db.rawQuery("SELECT song_id FROM favourites", null);
         resultSet.moveToFirst();
 
-        JSONArray jsonArray = new JSONArray();
+        int songIds[] = {};
 
         if(resultSet.getCount() > 0){
-            try {
-                JSONObject jsonObject = new JSONObject();
+            int i = 0;
+            songIds = new int[resultSet.getCount()];
+            while(i < resultSet.getCount()){
+                try {
+                    songIds[i] = resultSet.getInt(resultSet.getColumnIndex("song_id"));
+                }catch(Exception e){
+                    e.printStackTrace();
+                }
 
-                jsonObject.put("songId", resultSet.getString(resultSet.getColumnIndex("song_id")));
-                jsonObject.put("title", resultSet.getString(resultSet.getColumnIndex("title")));
-                jsonObject.put("albumName", resultSet.getString(resultSet.getColumnIndex("album_name")));
-                jsonObject.put("movieName", resultSet.getString(resultSet.getColumnIndex("movie_name")));
-                jsonObject.put("albumSinger", resultSet.getString(resultSet.getColumnIndex("album_singer")));
-                jsonObject.put("movieSinger", resultSet.getString(resultSet.getColumnIndex("movie_singer")));
-                jsonObject.put("year", resultSet.getString(resultSet.getColumnIndex("year")));
-                jsonObject.put("duration", resultSet.getString(resultSet.getColumnIndex("duration")));
-
-                jsonArray.put(jsonObject);
-            }catch(JSONException e){
-                e.printStackTrace();
+                resultSet.moveToNext();
+                i++;
             }
         }
 
         resultSet.close();
 
-        return  jsonArray;
+        return songIds;
     }
 
     public void deleteFromFavourites(int songId){
@@ -621,20 +565,139 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         String[] args = {String.valueOf(songId)};
 
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor resultSet = db.rawQuery("SELECT COUNT(*)" +
+        Cursor resultSet = db.rawQuery("SELECT COUNT(*) AS COUNT " +
                                             "FROM favourites f " +
                                             "WHERE f.song_id = ?", args);
         resultSet.moveToFirst();
 
         if(resultSet.getCount() > 0){
-            resultSet.close();
-            return true;
+            if(resultSet.getInt(resultSet.getColumnIndex("COUNT")) > 0) {
+                resultSet.close();
+                return true;
+            }
         }
 
         resultSet.close();
 
         return false;
     }
+
+
+    // SETTINGS
+    public void insertSettings(){
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put("get_notification", 1);
+        cv.put("language_code", 0);
+
+        db.insert("settings", null, cv);
+        db.close();
+    }
+
+    public void setGetNotification(int getNotification){
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put("get_notification", getNotification);
+
+        db.update("settings", cv, "id = ?", new String[]{String.valueOf(1)});
+        db.close();
+    }
+
+    public int getNotification(){
+        int getNotification = 0;
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor resultSet = db.rawQuery("SELECT get_notification FROM settings WHERE id = 1", null);
+        resultSet.moveToFirst();
+
+        if(resultSet.getCount() > 0){
+
+            getNotification = resultSet.getInt(resultSet.getColumnIndex("get_notification"));
+        }
+
+        resultSet.close();
+
+        return getNotification;
+    }
+
+    public void setLanguageCode(int languageCode){
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put("language_code", languageCode);
+
+        db.update("settings", cv, "id = ?", new String[]{String.valueOf(1)});
+        db.close();
+    }
+
+    public int getLanguageCode(){
+        int languageCode = 0;
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor resultSet = db.rawQuery("SELECT language_code FROM settings WHERE id = 1", null);
+        resultSet.moveToFirst();
+
+        if(resultSet.getCount() > 0){
+            languageCode = resultSet.getInt(resultSet.getColumnIndex("language_code"));
+        }
+
+        resultSet.close();
+
+        return languageCode;
+    }
+
+    public int getSettingsCount(){
+        int count = 0;
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor resultSet = db.rawQuery("SELECT COUNT(*) AS COUNT FROM settings", null);
+        resultSet.moveToFirst();
+
+        if(resultSet.getCount() > 0){
+            count = resultSet.getInt(resultSet.getColumnIndex("COUNT"));
+        }
+
+        resultSet.close();
+
+        return count;
+    }
+
+    // NOTIFICATIONS
+    public void insertNotificationId(int notificationId){
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put("notification_id", notificationId);
+
+        db.insert("notifications", null, cv);
+        db.close();
+    }
+
+    public boolean checkNotificationShown(int notificationId){
+        String[] args = {String.valueOf(notificationId)};
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor resultSet = db.rawQuery("SELECT COUNT(*) AS COUNT " +
+                "FROM notifications " +
+                "WHERE notification_id = ?", args);
+        resultSet.moveToFirst();
+
+        if(resultSet.getCount() > 0){
+            if(resultSet.getInt(resultSet.getColumnIndex("COUNT")) == 1) {
+                resultSet.close();
+                return true;
+            }
+        }
+
+        resultSet.close();
+
+        return false;
+    }
+
+    public void deleteNotifications(){
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete("notifications", null, null);
+        db.close();
+    }
+
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {

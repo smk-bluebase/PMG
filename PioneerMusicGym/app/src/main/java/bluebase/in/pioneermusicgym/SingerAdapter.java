@@ -17,6 +17,15 @@ import androidx.recyclerview.widget.RecyclerView;
 public class SingerAdapter extends RecyclerView.Adapter<SingerAdapter.SingerViewHolder> implements Filterable {
     private ArrayList<SingerItems> singerItemsArrayList;
     private ArrayList<SingerItems> singerItemsArrayListFull;
+    private OnItemClickListener mlistener;
+
+    public interface OnItemClickListener {
+        void onItemClick(int position);
+    }
+
+    public void setOnItemClickListener(OnItemClickListener listener) {
+        mlistener = listener;
+    }
 
     public static class SingerViewHolder extends RecyclerView.ViewHolder {
         private int singerId;
@@ -25,12 +34,21 @@ public class SingerAdapter extends RecyclerView.Adapter<SingerAdapter.SingerView
         private TextView numberOfMovies;
         private RelativeLayout singerItemRelativeLayout;
 
-        public SingerViewHolder (View itemView) {
+        public SingerViewHolder (View itemView, final OnItemClickListener listener) {
             super(itemView);
             singerTitle = itemView.findViewById(R.id.artistTitle);
             numberOfSongs = itemView.findViewById(R.id.numberOfSongs);
             numberOfMovies = itemView.findViewById(R.id.numberOfMovies);
             singerItemRelativeLayout = itemView.findViewById(R.id.artistItemRelativeLayout);
+
+            itemView.setOnClickListener(v -> {
+                if (listener != null) {
+                    int position = getAdapterPosition();
+                    if (position != RecyclerView.NO_POSITION) {
+                        listener.onItemClick(position);
+                    }
+                }
+            });
         }
 
     }
@@ -43,7 +61,7 @@ public class SingerAdapter extends RecyclerView.Adapter<SingerAdapter.SingerView
     @Override
     public SingerAdapter.SingerViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.artist_item, parent, false);
-        SingerAdapter.SingerViewHolder singerViewHolder = new SingerAdapter.SingerViewHolder(v);
+        SingerAdapter.SingerViewHolder singerViewHolder = new SingerAdapter.SingerViewHolder(v, mlistener);
         return singerViewHolder;
     }
 
@@ -106,5 +124,9 @@ public class SingerAdapter extends RecyclerView.Adapter<SingerAdapter.SingerView
             notifyDataSetChanged();
         }
     };
+
+    public ArrayList<SingerItems> getData() {
+        return singerItemsArrayList;
+    }
 
 }

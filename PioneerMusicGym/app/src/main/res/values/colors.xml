@@ -20,6 +20,7 @@
     <color name="black">#000000</color>
     <color name="pmg_logo_red">#DD2026</color>
     <color name="ochre">#CB7121</color>
+    <color name="lightBrown">#CF7F4D</color>
 
     <array name="homeColor">
         <item>@color/gainsBoro</item>

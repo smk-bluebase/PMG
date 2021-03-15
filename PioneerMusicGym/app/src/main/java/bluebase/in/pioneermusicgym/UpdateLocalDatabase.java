@@ -23,19 +23,21 @@ import java.util.Arrays;
 
 
 public abstract class UpdateLocalDatabase {
+    public static String urlSingers = CommonUtils.IP + "/pmg_android/search/getSingers.php";
+    public static String urlComposers = CommonUtils.IP + "/pmg_android/search/getComposers.php";
+    public static String urlMovies = CommonUtils.IP + "/pmg_android/search/getMovies.php";
 
-    private String urlSingers = CommonUtils.IP + "/PMG/pmg_android/search/getSingers.php";
-    private String urlComposers = CommonUtils.IP + "/PMG/pmg_android/search/getComposers.php";
-    private String urlAlbums = CommonUtils.IP + "/PMG/pmg_android/search/getAlbums.php";
-    private String urlMovies = CommonUtils.IP + "/PMG/pmg_android/search/getMovies.php";
-
-    Context context;
-    Boolean[] progress = new Boolean[4];
+    public static Context context;
+    public static Boolean[] progress = new Boolean[4];
 
     private Handler handler = new Handler();
     public static JsonObject jsonObject;
     ProgressDialog progressDialog;
-    ProgressDialog progressDialog1;
+    public static ProgressDialog progressDialog1;
+    public static boolean isUpdateAll = false;
+    public static boolean isSingerAvailable = true;
+    public static boolean isComposerAvailable = true;
+    public static boolean isMovieAvailable = true;
 
     public UpdateLocalDatabase(Context context){
         this.context = context;
@@ -48,66 +50,36 @@ public abstract class UpdateLocalDatabase {
         asyncCheckAvailability.execute(String.valueOf(time));
     }
 
-    public void updateSingers(){
-        progressDialog1 = new ProgressDialog(context);
-        progressDialog1.setCancelable(false);
-        progressDialog1.setMessage("Loading...");
-        progressDialog1.show();
-
-        int maxId = CommonUtils.dataBaseHelper.singersMaxId();
+    public static void updateSingers(int index, int limit){
+        isUpdateAll = false;
 
         jsonObject = new JsonObject();
-        jsonObject.addProperty("lowerLimit", maxId);
-        jsonObject.addProperty("upperLimit", maxId + 10);
+        jsonObject.addProperty("index", index);
+        jsonObject.addProperty("limit", limit);
 
-        PostSingerTable postSingerTable = new PostSingerTable(context);
+        PostSingerTable postSingerTable = new PostSingerTable(context, index);
         postSingerTable.checkServerAvailability(2);
     }
 
-    public void updateComposers(){
-        progressDialog1 = new ProgressDialog(context);
-        progressDialog1.setCancelable(false);
-        progressDialog1.setMessage("Loading...");
-        progressDialog1.show();
-
-        int maxId = CommonUtils.dataBaseHelper.composersMaxId();
+    public static void updateComposers(int index, int limit){
+        isUpdateAll = false;
 
         jsonObject = new JsonObject();
-        jsonObject.addProperty("lowerLimit", maxId);
-        jsonObject.addProperty("upperLimit", maxId + 10);
+        jsonObject.addProperty("index", index);
+        jsonObject.addProperty("limit", limit);
 
-        PostComposerTable postComposerTable = new PostComposerTable(context);
+        PostComposerTable postComposerTable = new PostComposerTable(context, index);
         postComposerTable.checkServerAvailability(2);
     }
 
-    public void updateAlbums(){
-        progressDialog1 = new ProgressDialog(context);
-        progressDialog1.setCancelable(false);
-        progressDialog1.setMessage("Loading...");
-        progressDialog1.show();
-
-        int maxId = CommonUtils.dataBaseHelper.albumsMaxId();
+    public static void updateMovies(int index, int limit){
+        isUpdateAll = false;
 
         jsonObject = new JsonObject();
-        jsonObject.addProperty("lowerLimit", maxId);
-        jsonObject.addProperty("upperLimit", maxId + 10);
+        jsonObject.addProperty("index", index);
+        jsonObject.addProperty("limit", limit);
 
-        PostAlbumTable postAlbumTable = new PostAlbumTable(context);
-        postAlbumTable.checkServerAvailability(2);
-    }
-
-    public void updateMovies(){
-        progressDialog1.setCancelable(false);
-        progressDialog1.setMessage("Loading...");
-        progressDialog1.show();
-
-        int maxId = CommonUtils.dataBaseHelper.moviesMaxId();
-
-        jsonObject = new JsonObject();
-        jsonObject.addProperty("lowerLimit", maxId);
-        jsonObject.addProperty("upperLimit", maxId + 10);
-
-        PostMovieTable postMovieTable = new PostMovieTable(context);
+        PostMovieTable postMovieTable = new PostMovieTable(context, index);
         postMovieTable.checkServerAvailability(2);
     }
 
@@ -121,35 +93,30 @@ public abstract class UpdateLocalDatabase {
         progressDialog.show();
 
         jsonObject = new JsonObject();
-        jsonObject.addProperty("lowerLimit", 0);
-        jsonObject.addProperty("upperLimit", 10);
+        jsonObject.addProperty("index", 0);
+        jsonObject.addProperty("limit", CommonUtils.homeQueryLimit);
 
         new Thread(() -> {
             int i = 0;
             boolean isProgress = true;
             boolean isUpdateSuccessful = true;
-            while(i < 4){
+            while(i < 3){
                 try {
                     if (isUpdateSuccessful){
                         switch (i) {
                             case 0:
                                 CommonUtils.dataBaseHelper.deleteSingers();
-                                PostSingerTable postSingerTable = new PostSingerTable(context);
+                                PostSingerTable postSingerTable = new PostSingerTable(context, 0);
                                 postSingerTable.checkServerAvailability(2);
                                 break;
                             case 1:
                                 CommonUtils.dataBaseHelper.deleteComposers();
-                                PostComposerTable postComposerTable = new PostComposerTable(context);
+                                PostComposerTable postComposerTable = new PostComposerTable(context, 0);
                                 postComposerTable.checkServerAvailability(2);
                                 break;
                             case 2:
-                                CommonUtils.dataBaseHelper.deleteAlbums();
-                                PostAlbumTable postAlbumTable = new PostAlbumTable(context);
-                                postAlbumTable.checkServerAvailability(2);
-                                break;
-                            case 3:
                                 CommonUtils.dataBaseHelper.deleteMovies();
-                                PostMovieTable postMovieTable = new PostMovieTable(context);
+                                PostMovieTable postMovieTable = new PostMovieTable(context, 0);
                                 postMovieTable.checkServerAvailability(2);
                                 break;
                             default:
@@ -171,15 +138,19 @@ public abstract class UpdateLocalDatabase {
                     e.printStackTrace();
                 }
             }
+
             progressDialog.dismiss();
             handler.post(() -> onPostUpdate());
         }).start();
 
     }
 
-    private class PostSingerTable extends PostRequest{
-        public PostSingerTable(Context context){
+    public static class PostSingerTable extends PostRequest{
+        int index;
+
+        public PostSingerTable(Context context, int index){
             super(context);
+            this.index = index;
         }
 
         public void serverAvailability(boolean isServerAvailable){
@@ -187,12 +158,12 @@ public abstract class UpdateLocalDatabase {
                 super.postRequest(urlSingers, jsonObject);
             }else {
                 Toast.makeText(context, "Connection to the server \nnot Available", Toast.LENGTH_SHORT).show();
-                progressDialog1.dismiss();
+                if(isUpdateAll) progressDialog1.dismiss();
             }
         }
 
         public void onFinish(JSONArray jsonArray) {
-            progressDialog1.dismiss();
+            if(isUpdateAll) progressDialog1.dismiss();
 
             try {
                 JSONObject jsonObject = jsonArray.getJSONObject(0);
@@ -206,17 +177,21 @@ public abstract class UpdateLocalDatabase {
                         int singerId = 0;
                         String singerName = " ";
                         int numberOfSongs = 0;
-                        int numberOfAlbums = 0;
                         int numberOfMovies = 0;
 
                         singerId = singer.getInt(0);
                         singerName = singer.getString(1);
                         numberOfSongs = singer.getInt(2);
-                        numberOfAlbums = singer.getInt(3);
-                        numberOfMovies = singer.getInt(4);
+                        numberOfMovies = singer.getInt(3);
 
-                        CommonUtils.dataBaseHelper.insertSingers(singerId, singerName, numberOfSongs, numberOfAlbums, numberOfMovies);
+                        CommonUtils.dataBaseHelper.insertSingers(singerId, singerName, numberOfSongs, numberOfMovies);
                     }
+
+                    isSingerAvailable = true;
+                    if(!isUpdateAll) HomeFragment.populateSingers(index);
+                }else {
+                    Toast.makeText(context, "No More Data", Toast.LENGTH_SHORT).show();
+                    isSingerAvailable = false;
                 }
 
             }catch(JSONException e){
@@ -228,9 +203,12 @@ public abstract class UpdateLocalDatabase {
 
     }
 
-    private class PostComposerTable extends PostRequest{
-        public PostComposerTable(Context context){
+    public static class PostComposerTable extends PostRequest{
+        int index;
+
+        public PostComposerTable(Context context, int index){
             super(context);
+            this.index = index;
         }
 
         public void serverAvailability(boolean isServerAvailable){
@@ -238,12 +216,12 @@ public abstract class UpdateLocalDatabase {
                 super.postRequest(urlComposers, jsonObject);
             }else {
                 Toast.makeText(context, "Connection to the server \nnot Available", Toast.LENGTH_SHORT).show();
-                progressDialog1.dismiss();
+                if(isUpdateAll) progressDialog1.dismiss();
             }
         }
 
         public void onFinish(JSONArray jsonArray){
-            progressDialog1.dismiss();
+            if(isUpdateAll) progressDialog1.dismiss();
 
             try {
                 JSONObject jsonObject = jsonArray.getJSONObject(0);
@@ -257,17 +235,21 @@ public abstract class UpdateLocalDatabase {
                         int composerId = 0;
                         String composerName = " ";
                         int numberOfSongs = 0;
-                        int numberOfAlbums = 0;
                         int numberOfMovies = 0;
 
                         composerId = composer.getInt(0);
                         composerName = composer.getString(1);
                         numberOfSongs = composer.getInt(2);
-                        numberOfAlbums = composer.getInt(3);
-                        numberOfMovies = composer.getInt(4);
+                        numberOfMovies = composer.getInt(3);
 
-                        CommonUtils.dataBaseHelper.insertComposers(composerId, composerName, numberOfSongs, numberOfAlbums, numberOfMovies);
+                        CommonUtils.dataBaseHelper.insertComposers(composerId, composerName, numberOfSongs, numberOfMovies);
                     }
+
+                    isComposerAvailable = true;
+                    if(!isUpdateAll) HomeFragment.populateComposers(index);
+                }else {
+                    Toast.makeText(context, "No More Data", Toast.LENGTH_SHORT).show();
+                    isComposerAvailable = false;
                 }
 
             }catch(JSONException e){
@@ -279,58 +261,12 @@ public abstract class UpdateLocalDatabase {
 
     }
 
-    private class PostAlbumTable extends PostRequest{
-        public PostAlbumTable(Context context){
+    public static class PostMovieTable extends PostRequest{
+        int index;
+
+        public PostMovieTable(Context context, int index){
             super(context);
-        }
-
-        public void serverAvailability(boolean isServerAvailable){
-            if(isServerAvailable){
-                super.postRequest(urlAlbums, jsonObject);
-            }else {
-                Toast.makeText(context, "Connection to the server \nnot Available", Toast.LENGTH_SHORT).show();
-                progressDialog1.dismiss();
-            }
-        }
-
-        public void onFinish(JSONArray jsonArray){
-            progressDialog1.dismiss();
-
-            try {
-                JSONObject jsonObject = jsonArray.getJSONObject(0);
-
-                if(jsonObject.getBoolean("status")) {
-                    JSONArray albums = jsonObject.getJSONArray("albums");
-
-                    for (int i = 0; i < albums.length(); i++) {
-                        JSONArray album = albums.getJSONArray(i);
-
-                        int albumId = 0;
-                        String albumName = " ";
-                        String year = " ";
-                        int numberOfSongs = 0;
-
-                        albumId = album.getInt(0);
-                        albumName = album.getString(1);
-                        year = album.getString(2);
-                        numberOfSongs = album.getInt(3);
-
-                        CommonUtils.dataBaseHelper.insertAlbums(albumId, albumName, year, numberOfSongs);
-                    }
-                }
-
-            }catch(JSONException e){
-                e.printStackTrace();
-            }
-
-            progress[2] = true;
-        }
-
-    }
-
-    private class PostMovieTable extends PostRequest{
-        public PostMovieTable(Context context){
-            super(context);
+            this.index = index;
         }
 
         public void serverAvailability(boolean isServerAvailable){
@@ -338,12 +274,12 @@ public abstract class UpdateLocalDatabase {
                 super.postRequest(urlMovies, jsonObject);
             }else {
                 Toast.makeText(context, "Connection to the server \nnot Available", Toast.LENGTH_SHORT).show();
-                progressDialog1.dismiss();
+                if(isUpdateAll) progressDialog1.dismiss();
             }
         }
 
         public void onFinish(JSONArray jsonArray){
-            progressDialog1.dismiss();
+            if(isUpdateAll) progressDialog1.dismiss();
 
             try {
                 JSONObject jsonObject = jsonArray.getJSONObject(0);
@@ -366,13 +302,19 @@ public abstract class UpdateLocalDatabase {
 
                         CommonUtils.dataBaseHelper.insertMovies(movieId, movieName, year, numberOfSongs);
                     }
+
+                    isMovieAvailable = true;
+                    if(!isUpdateAll) HomeFragment.populateMovies(index);
+                }else {
+                    Toast.makeText(context, "No More Data", Toast.LENGTH_SHORT).show();
+                    isMovieAvailable = false;
                 }
 
             }catch(JSONException e){
                 e.printStackTrace();
             }
 
-            progress[3] = true;
+            progress[2] = true;
         }
 
     }

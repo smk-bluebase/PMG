@@ -43,14 +43,14 @@ public class ProfileEditFragment extends Fragment {
     EditText dateOfBirth;
     EditText mobileNo;
     EditText experience;
-    CheckBox englishCheckBox;
     CheckBox tamilCheckBox;
+    CheckBox malayalamCheckBox;
     CheckBox hindiCheckBox;
 
     String originalUserName;
 
-    String urlGetProfile = CommonUtils.IP + "/PMG/pmg_android/user_settings/getProfileDetails.php";
-    String urlEditProfile = CommonUtils.IP + "/PMG/pmg_android/user_settings/editProfileDetails.php";
+    String urlGetProfile = CommonUtils.IP + "/pmg_android/user_settings/getProfileDetails.php";
+    String urlEditProfile = CommonUtils.IP + "/pmg_android/user_settings/editProfileDetails.php";
 
     String[] genderArr = {"Male", "Female", "Other"};
 
@@ -77,8 +77,8 @@ public class ProfileEditFragment extends Fragment {
         dateOfBirth = view.findViewById(R.id.dateOfBirth);
         mobileNo = view.findViewById(R.id.mobileNo);
         experience = view.findViewById(R.id.experience);
-        englishCheckBox = view.findViewById(R.id.englishCheckBox);
         tamilCheckBox = view.findViewById(R.id.tamilCheckBox);
+        malayalamCheckBox = view.findViewById(R.id.malayalamCheckBox);
         hindiCheckBox = view.findViewById(R.id.hindiCheckBox);
 
         Button update = view.findViewById(R.id.update);
@@ -93,7 +93,7 @@ public class ProfileEditFragment extends Fragment {
                                     if(!dateOfBirth.getText().toString().equals("")){
                                         if (!mobileNo.getText().toString().equals("")) {
                                             if (!experience.getText().toString().equals("")) {
-                                                if(englishCheckBox.isChecked() || tamilCheckBox.isChecked() || hindiCheckBox.isChecked()) {
+                                                if(tamilCheckBox.isChecked() || malayalamCheckBox.isChecked() || hindiCheckBox.isChecked()) {
                                                     progressDialog = new ProgressDialog(getContext());
                                                     progressDialog.setCancelable(false);
                                                     progressDialog.setMessage("Loading...");
@@ -109,12 +109,12 @@ public class ProfileEditFragment extends Fragment {
                                                     jsonObject.addProperty("dateOfBirth", dateOfBirth.getText().toString());
                                                     jsonObject.addProperty("mobileNo", mobileNo.getText().toString());
                                                     jsonObject.addProperty("experience", experience.getText().toString());
-                                                    if (englishCheckBox.isChecked())
-                                                        jsonObject.addProperty("english", 1);
-                                                    else jsonObject.addProperty("english", 0);
                                                     if (tamilCheckBox.isChecked())
                                                         jsonObject.addProperty("tamil", 1);
                                                     else jsonObject.addProperty("tamil", 0);
+                                                    if (malayalamCheckBox.isChecked())
+                                                        jsonObject.addProperty("malayalam", 1);
+                                                    else jsonObject.addProperty("malayalam", 0);
                                                     if (hindiCheckBox.isChecked())
                                                         jsonObject.addProperty("hindi", 1);
                                                     else jsonObject.addProperty("hindi", 0);
@@ -160,7 +160,7 @@ public class ProfileEditFragment extends Fragment {
             int mDay = c.get(Calendar.DAY_OF_MONTH);
 
             DatePickerDialog datePickerDialog = new DatePickerDialog(context,
-                    (DatePickerDialog.OnDateSetListener) (view12, year, monthOfYear, dayOfMonth) -> {
+                    (view12, year, monthOfYear, dayOfMonth) -> {
                         String month;
                         if(monthOfYear + 1 < 10){
                             month = "0" + (monthOfYear + 1);
@@ -231,8 +231,8 @@ public class ProfileEditFragment extends Fragment {
                     dateOfBirth.setText(jsonObject.getString("dateOfBirth"));
                     mobileNo.setText(jsonObject.getString("mobileNo"));
                     experience.setText(jsonObject.getString("experience"));
-                    if(jsonObject.getInt("english") == 1) englishCheckBox.setChecked(true);
                     if(jsonObject.getInt("tamil") == 1) tamilCheckBox.setChecked(true);
+                    if(jsonObject.getInt("malayalam") == 1) malayalamCheckBox.setChecked(true);
                     if(jsonObject.getInt("hindi") == 1) hindiCheckBox.setChecked(true);
                 }else{
                     Toast.makeText(context, "Data Fetch Error", Toast.LENGTH_SHORT).show();
